@@ -1,257 +1,656 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0,
+               maximum-scale=1.0, user-scalable=no">
 
-<title>ULTRON Neural Core</title>
+<title>ULTRON AI Neural Core</title>
 
+<!-- THREE.JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
+<!-- MEDIAPIPE -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+
 <style>
+
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
 html,body{
+
     margin:0;
+
     width:100%;
     height:100%;
+
     overflow:hidden;
+
     background:#020308;
+
+    font-family:Arial,sans-serif;
+
+    touch-action:none;
 }
-
-#ui{
-    position:fixed;
-    top:20px;
-    width:100%;
-    text-align:center;
-    color:#ffd84a;
-    font-family:Arial;
-    letter-spacing:6px;
-    font-size:28px;
-    text-shadow:0 0 15px #ffae00;
-    z-index:5;
-}
-
-#status{
-    position:fixed;
-    bottom:25px;
-    width:100%;
-    text-align:center;
-    color:#ffd84a;
-    font-family:Arial;
-    font-size:14px;
-    z-index:5;
-}
-</style>
-</head>
-
-<body>
-
-<div id="ui">ULTRON AI NEURAL CORE</div>
-<div id="status">NEURAL NETWORK ONLINE</div>
-
-<script>
-
-const scene = new THREE.Scene();
-
-const camera = new THREE.PerspectiveCamera(
-    60,
-    window.innerWidth/window.innerHeight,
-    0.1,
-    1000
-);
-
-camera.position.z = 8;
-
-const renderer = new THREE.WebGLRenderer({
-    antialias:true,
-    alpha:true
-});
-
-renderer.setSize(
-    window.innerWidth,
-    window.innerHeight
-);
-
-document.body.appendChild(renderer.domElement);
 
 
 /* =========================
-   CENTRAL AI CORE
+   BACKGROUND
 ========================= */
 
-const coreGeometry =
-new THREE.IcosahedronGeometry(1.2,3);
+body{
 
-const coreMaterial =
-new THREE.MeshBasicMaterial({
-    color:0xffd000,
-    wireframe:true
+    background:
+
+    radial-gradient(
+        circle at center,
+        rgba(255,180,0,0.12),
+        transparent 35%
+    ),
+
+    #020308;
+
+}
+
+
+/* =========================
+   TITLE
+========================= */
+
+#title{
+
+    position:fixed;
+
+    top:20px;
+
+    width:100%;
+
+    text-align:center;
+
+    color:#ffd84a;
+
+    font-size:25px;
+
+    letter-spacing:6px;
+
+    text-shadow:
+
+    0 0 10px #ffb300,
+
+    0 0 30px #ff8800;
+
+    z-index:10;
+
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+#status{
+
+    position:fixed;
+
+    bottom:95px;
+
+    width:100%;
+
+    text-align:center;
+
+    color:#ffd84a;
+
+    font-size:13px;
+
+    letter-spacing:2px;
+
+    text-shadow:0 0 10px #ff9900;
+
+    z-index:10;
+
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+
+.buttons{
+
+    position:fixed;
+
+    bottom:25px;
+
+    width:100%;
+
+    text-align:center;
+
+    z-index:20;
+
+}
+
+button{
+
+    padding:10px 15px;
+
+    margin:3px;
+
+    border:1px solid #ffd84a;
+
+    border-radius:20px;
+
+    background:
+
+    rgba(255,150,0,0.08);
+
+    color:#ffd84a;
+
+    font-size:13px;
+
+    box-shadow:
+
+    0 0 10px rgba(255,180,0,0.3);
+
+}
+
+button:active{
+
+    background:
+
+    rgba(255,180,0,0.4);
+
+}
+
+
+/* =========================
+   CAMERA
+========================= */
+
+#camera{
+
+    display:none;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div id="title">
+
+ULTRON AI
+
+</div>
+
+
+<div id="status">
+
+NEURAL CORE ONLINE • TOUCH CONTROL ACTIVE
+
+</div>
+
+
+<div class="buttons">
+
+<button onclick="resetBrain()">
+
+RESET
+
+</button>
+
+<button onclick="startVoice()">
+
+🎤 VOICE
+
+</button>
+
+<button onclick="startHandTracking()">
+
+✋ HAND TRACKING
+
+</button>
+
+</div>
+
+
+<video id="camera"
+       autoplay
+       playsinline>
+</video>
+
+
+<script>
+
+
+/* ==================================
+   THREE.JS SCENE
+================================== */
+
+
+const scene =
+new THREE.Scene();
+
+
+const camera =
+new THREE.PerspectiveCamera(
+
+    60,
+
+    window.innerWidth /
+    window.innerHeight,
+
+    0.1,
+
+    1000
+
+);
+
+
+camera.position.z = 8;
+
+
+const renderer =
+new THREE.WebGLRenderer({
+
+    antialias:true,
+
+    alpha:true
+
 });
 
-const core =
-new THREE.Mesh(
-    coreGeometry,
-    coreMaterial
+
+renderer.setPixelRatio(
+
+    Math.min(
+        window.devicePixelRatio,
+        2
+    )
+
 );
+
+
+renderer.setSize(
+
+    window.innerWidth,
+
+    window.innerHeight
+
+);
+
+
+document.body.appendChild(
+
+    renderer.domElement
+
+);
+
+
+/* ==================================
+   AI CORE
+================================== */
+
+
+const coreGeometry =
+
+new THREE.IcosahedronGeometry(
+
+    1.2,
+
+    3
+
+);
+
+
+const coreMaterial =
+
+new THREE.MeshBasicMaterial({
+
+    color:0xffd000,
+
+    wireframe:true
+
+});
+
+
+const core =
+
+new THREE.Mesh(
+
+    coreGeometry,
+
+    coreMaterial
+
+);
+
 
 scene.add(core);
 
 
 /* CORE GLOW */
 
+
 const glowGeometry =
-new THREE.SphereGeometry(1.4,32,32);
+
+new THREE.SphereGeometry(
+
+    1.45,
+
+    32,
+
+    32
+
+);
+
 
 const glowMaterial =
+
 new THREE.MeshBasicMaterial({
+
     color:0xffa000,
+
     transparent:true,
+
     opacity:0.12
+
 });
 
+
 const glow =
+
 new THREE.Mesh(
+
     glowGeometry,
+
     glowMaterial
+
 );
+
 
 scene.add(glow);
 
 
-/* =========================
+/* ==================================
    NEURAL NODES
-========================= */
+================================== */
+
 
 const nodes = [];
 
+
 const nodeGeometry =
+
 new THREE.SphereGeometry(
+
     0.035,
+
     8,
+
     8
+
 );
 
+
 const nodeMaterial =
+
 new THREE.MeshBasicMaterial({
+
     color:0xffd84a
+
 });
 
 
-for(let i=0;i<250;i++){
+for(
+
+    let i=0;
+
+    i<300;
+
+    i++
+
+){
+
 
     const angle =
-    Math.random()*Math.PI*2;
+
+    Math.random() *
+
+    Math.PI *
+
+    2;
+
 
     const radius =
-    1.7 + Math.random()*2.5;
+
+    1.8 +
+
+    Math.random()*2.5;
+
 
     const y =
-    (Math.random()-0.5)*4;
+
+    (
+
+        Math.random()
+
+        -0.5
+
+    ) * 4;
+
 
     const x =
-    Math.cos(angle)*radius;
+
+    Math.cos(angle)
+
+    * radius;
+
 
     const z =
-    Math.sin(angle)*radius;
+
+    Math.sin(angle)
+
+    * radius;
+
 
     const node =
+
     new THREE.Mesh(
+
         nodeGeometry,
+
         nodeMaterial
+
     );
 
+
     node.position.set(
+
         x,
+
         y,
+
         z
+
     );
+
 
     scene.add(node);
 
+
     nodes.push(node);
+
 }
 
 
-/* =========================
+/* ==================================
    NEURAL CONNECTIONS
-========================= */
+================================== */
+
 
 const lineMaterial =
+
 new THREE.LineBasicMaterial({
-    color:0xffb300,
+
+    color:0xffa800,
+
     transparent:true,
+
     opacity:0.25
+
 });
 
 
-for(let i=0;i<nodes.length;i++){
+for(
 
-    /* Connect random nearby nodes */
+    let i=0;
 
-    for(let j=0;j<2;j++){
+    i<nodes.length;
+
+    i++
+
+){
+
+
+    for(
+
+        let j=0;
+
+        j<2;
+
+        j++
+
+    ){
+
 
         const target =
+
         nodes[
+
             Math.floor(
-                Math.random()*nodes.length
+
+                Math.random()
+
+                * nodes.length
+
             )
+
         ];
 
-        const points = [
+
+        const geometry =
+
+        new THREE.BufferGeometry()
+
+        .setFromPoints([
 
             nodes[i].position,
 
             target.position
 
-        ];
+        ]);
 
-        const geometry =
-        new THREE.BufferGeometry()
-        .setFromPoints(points);
 
         const line =
+
         new THREE.Line(
+
             geometry,
+
             lineMaterial
+
         );
+
 
         scene.add(line);
 
     }
+
 }
 
 
-/* =========================
+/* ==================================
    ENERGY PARTICLES
-========================= */
+================================== */
+
 
 const particleGeometry =
+
 new THREE.BufferGeometry();
+
 
 const particlePositions = [];
 
-for(let i=0;i<500;i++){
+
+for(
+
+    let i=0;
+
+    i<500;
+
+    i++
+
+){
+
 
     particlePositions.push(
 
-        (Math.random()-0.5)*8,
+        (
 
-        (Math.random()-0.5)*8,
+            Math.random()
 
-        (Math.random()-0.5)*8
+            -0.5
+
+        ) * 9,
+
+
+        (
+
+            Math.random()
+
+            -0.5
+
+        ) * 9,
+
+
+        (
+
+            Math.random()
+
+            -0.5
+
+        ) * 9
 
     );
 
 }
 
+
 particleGeometry.setAttribute(
+
     "position",
+
     new THREE.Float32BufferAttribute(
+
         particlePositions,
+
         3
+
     )
+
 );
 
+
 const particleMaterial =
+
 new THREE.PointsMaterial({
 
     color:0xffd84a,
@@ -264,98 +663,656 @@ new THREE.PointsMaterial({
 
 });
 
+
 const particles =
+
 new THREE.Points(
+
     particleGeometry,
+
     particleMaterial
+
 );
+
 
 scene.add(particles);
 
 
-/* =========================
+/* ==================================
+   TOUCH CONTROLS
+================================== */
+
+
+let touchStartX = 0;
+
+let touchStartY = 0;
+
+let lastTouchX = 0;
+
+let lastTouchY = 0;
+
+let startDistance = 0;
+
+let startScale = 1;
+
+
+renderer.domElement.addEventListener(
+
+"touchstart",
+
+function(event){
+
+    event.preventDefault();
+
+
+    if(
+
+        event.touches.length === 1
+
+    ){
+
+        touchStartX =
+
+        event.touches[0].clientX;
+
+
+        touchStartY =
+
+        event.touches[0].clientY;
+
+
+        lastTouchX =
+
+        touchStartX;
+
+
+        lastTouchY =
+
+        touchStartY;
+
+    }
+
+
+    if(
+
+        event.touches.length === 2
+
+    ){
+
+        startDistance =
+
+        getDistance(
+
+            event.touches[0],
+
+            event.touches[1]
+
+        );
+
+
+        startScale =
+
+        scene.scale.x;
+
+    }
+
+},
+
+{passive:false}
+
+);
+
+
+renderer.domElement.addEventListener(
+
+"touchmove",
+
+function(event){
+
+    event.preventDefault();
+
+
+    /* ONE FINGER ROTATION */
+
+    if(
+
+        event.touches.length === 1
+
+    ){
+
+        const x =
+
+        event.touches[0].clientX;
+
+
+        const y =
+
+        event.touches[0].clientY;
+
+
+        const dx =
+
+        x - lastTouchX;
+
+
+        const dy =
+
+        y - lastTouchY;
+
+
+        scene.rotation.y +=
+
+        dx * 0.008;
+
+
+        scene.rotation.x +=
+
+        dy * 0.008;
+
+
+        lastTouchX = x;
+
+        lastTouchY = y;
+
+    }
+
+
+    /* TWO FINGER ZOOM */
+
+    if(
+
+        event.touches.length === 2
+
+    ){
+
+        const distance =
+
+        getDistance(
+
+            event.touches[0],
+
+            event.touches[1]
+
+        );
+
+
+        const zoom =
+
+        distance /
+
+        startDistance;
+
+
+        let scale =
+
+        startScale *
+
+        zoom;
+
+
+        scale =
+
+        Math.max(
+
+            0.5,
+
+            Math.min(
+
+                scale,
+
+                3
+
+            )
+
+        );
+
+
+        scene.scale.set(
+
+            scale,
+
+            scale,
+
+            scale
+
+        );
+
+    }
+
+},
+
+{passive:false}
+
+);
+
+
+/* TOUCH DISTANCE */
+
+function getDistance(
+
+    touch1,
+
+    touch2
+
+){
+
+    const dx =
+
+    touch1.clientX -
+
+    touch2.clientX;
+
+
+    const dy =
+
+    touch1.clientY -
+
+    touch2.clientY;
+
+
+    return Math.sqrt(
+
+        dx*dx +
+
+        dy*dy
+
+    );
+
+}
+
+
+/* ==================================
+   DOUBLE TAP RESET
+================================== */
+
+
+let lastTap = 0;
+
+
+renderer.domElement.addEventListener(
+
+"touchend",
+
+function(){
+
+    const now =
+
+    Date.now();
+
+
+    if(
+
+        now - lastTap < 300
+
+    ){
+
+        resetBrain();
+
+    }
+
+
+    lastTap = now;
+
+});
+
+
+/* ==================================
+   RESET
+================================== */
+
+
+function resetBrain(){
+
+    scene.rotation.set(
+
+        0,
+
+        0,
+
+        0
+
+    );
+
+
+    scene.scale.set(
+
+        1,
+
+        1,
+
+        1
+
+    );
+
+
+    document.getElementById(
+
+        "status"
+
+    ).innerText =
+
+    "NEURAL CORE RESET • ONLINE";
+
+}
+
+
+/* ==================================
    ANIMATION
-========================= */
+================================== */
+
 
 function animate(){
 
     requestAnimationFrame(
+
         animate
+
     );
-
-    /* Rotate neural system */
-
-    scene.rotation.y += 0.002;
-
-    scene.rotation.x =
-    Math.sin(
-        Date.now()*0.0003
-    )*0.05;
 
 
     /* Core rotation */
 
-    core.rotation.x += 0.01;
+    core.rotation.x +=
 
-    core.rotation.y += 0.015;
+    0.008;
+
+
+    core.rotation.y +=
+
+    0.012;
 
 
     /* Core pulse */
 
     const pulse =
+
     1 +
+
     Math.sin(
-        Date.now()*0.003
-    )*0.08;
+
+        Date.now()
+
+        * 0.003
+
+    ) * 0.08;
+
 
     core.scale.set(
+
         pulse,
+
         pulse,
+
         pulse
+
     );
+
 
     glow.scale.set(
+
         pulse,
+
         pulse,
+
         pulse
+
     );
 
 
-    /* Energy particle movement */
+    /* Energy movement */
 
-    particles.rotation.y += 0.004;
+    particles.rotation.y +=
+
+    0.003;
 
 
     renderer.render(
+
         scene,
+
         camera
+
     );
 
 }
 
+
 animate();
 
 
-/* =========================
+/* ==================================
    RESIZE
-========================= */
+================================== */
+
 
 window.addEventListener(
+
 "resize",
+
 function(){
 
+
     camera.aspect =
+
     window.innerWidth /
+
     window.innerHeight;
+
 
     camera.updateProjectionMatrix();
 
+
     renderer.setSize(
+
         window.innerWidth,
+
         window.innerHeight
+
     );
 
 });
+
+
+/* ==================================
+   VOICE
+================================== */
+
+
+function startVoice(){
+
+
+    const SpeechRecognition =
+
+    window.SpeechRecognition ||
+
+    window.webkitSpeechRecognition;
+
+
+    if(
+
+        !SpeechRecognition
+
+    ){
+
+        alert(
+
+            "Voice recognition not supported"
+
+        );
+
+        return;
+
+    }
+
+
+    const recognition =
+
+    new SpeechRecognition();
+
+
+    recognition.lang =
+
+    "en-US";
+
+
+    document.getElementById(
+
+        "status"
+
+    ).innerText =
+
+    "LISTENING...";
+
+
+    recognition.start();
+
+
+    recognition.onresult =
+
+    function(event){
+
+
+        const command =
+
+        event.results[0][0]
+
+        .transcript
+
+        .toLowerCase();
+
+
+        let response =
+
+        "Command received, Boss.";
+
+
+        if(
+
+            command.includes(
+
+                "hello"
+
+            )
+
+        ){
+
+            response =
+
+            "Hello Boss. ULTRON is online.";
+
+        }
+
+
+        else if(
+
+            command.includes(
+
+                "status"
+
+            )
+
+        ){
+
+            response =
+
+            "Neural core is fully operational.";
+
+        }
+
+
+        speak(response);
+
+    };
+
+}
+
+
+/* VOICE OUTPUT */
+
+
+function speak(text){
+
+
+    const speech =
+
+    new SpeechSynthesisUtterance(
+
+        text
+
+    );
+
+
+    speech.pitch =
+
+    0.7;
+
+
+    speech.rate =
+
+    0.9;
+
+
+    speechSynthesis.speak(
+
+        speech
+
+    );
+
+
+    document.getElementById(
+
+        "status"
+
+    ).innerText =
+
+    text;
+
+}
+
+
+/* ==================================
+   HAND TRACKING
+================================== */
+
+
+async function startHandTracking(){
+
+
+    const video =
+
+    document.getElementById(
+
+        "camera"
+
+    );
+
+
+    const stream =
+
+    await navigator.mediaDevices
+
+    .getUserMedia({
+
+        video:true
+
+    });
+
+
+    video.srcObject =
+
+    stream;
+
+
+    document.getElementById(
+
+        "status"
+
+    ).innerText =
+
+    "HAND TRACKING STARTED";
+
+}
+
 
 </script>
 
