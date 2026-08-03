@@ -1,48 +1,56 @@
-/* ======================================================
-   ULTRON V3
-====================================================== */
+/* =====================================================
+   ULTRON V4
+===================================================== */
 
 
-/* =========================
+/* =====================================================
    VARIABLES
-========================= */
+===================================================== */
 
-let handTrackingActive=false;
+let handTrackingActive = false;
 
-let touchMode=false;
+let touchMode = false;
 
-let cameraStream=null;
+let cameraStream = null;
 
-let lastHandX=null;
+let lastHandX = null;
 
-let lastHandY=null;
-
-let currentZoom=1;
-
-let processing=false;
-
-let selected=false;
-
-let lastTap=0;
+let lastHandY = null;
 
 
-/* =========================
+/* PERSISTENT ZOOM */
+
+let currentZoom = 1;
+
+let previousPinchDistance = null;
+
+let zoomSensitivity = 3;
+
+
+/* PROCESSING */
+
+let processing = false;
+
+
+/* DOUBLE TAP */
+
+let lastTap = 0;
+
+
+/* =====================================================
    THREE.JS
-========================= */
+===================================================== */
 
-const scene=
-
+const scene =
 new THREE.Scene();
 
 
-const camera=
-
+const camera =
 new THREE.PerspectiveCamera(
 
 60,
 
-window.innerWidth/
-
+window.innerWidth /
 window.innerHeight,
 
 0.1,
@@ -52,11 +60,10 @@ window.innerHeight,
 );
 
 
-camera.position.z=8;
+camera.position.z = 8;
 
 
-const renderer=
-
+const renderer =
 new THREE.WebGLRenderer({
 
 antialias:true,
@@ -95,24 +102,22 @@ renderer.domElement
 );
 
 
-/* =========================
+/* =====================================================
    AI GROUP
-========================= */
+===================================================== */
 
-const aiGroup=
-
+const aiGroup =
 new THREE.Group();
 
 
 scene.add(aiGroup);
 
 
-/* =========================
+/* =====================================================
    CORE
-========================= */
+===================================================== */
 
-const coreGeometry=
-
+const coreGeometry =
 new THREE.IcosahedronGeometry(
 
 1,
@@ -122,8 +127,7 @@ new THREE.IcosahedronGeometry(
 );
 
 
-const coreMaterial=
-
+const coreMaterial =
 new THREE.MeshBasicMaterial({
 
 color:0xffd000,
@@ -133,8 +137,7 @@ wireframe:true
 });
 
 
-const core=
-
+const core =
 new THREE.Mesh(
 
 coreGeometry,
@@ -147,12 +150,11 @@ coreMaterial
 aiGroup.add(core);
 
 
-/* =========================
-   GLOW
-========================= */
+/* =====================================================
+   CORE GLOW
+===================================================== */
 
-const glowGeometry=
-
+const glowGeometry =
 new THREE.SphereGeometry(
 
 1.3,
@@ -164,8 +166,7 @@ new THREE.SphereGeometry(
 );
 
 
-const glowMaterial=
-
+const glowMaterial =
 new THREE.MeshBasicMaterial({
 
 color:0xffa000,
@@ -177,8 +178,7 @@ opacity:0.12
 });
 
 
-const glow=
-
+const glow =
 new THREE.Mesh(
 
 glowGeometry,
@@ -191,11 +191,11 @@ glowMaterial
 aiGroup.add(glow);
 
 
-/* =========================
-   NEURAL RINGS
-========================= */
+/* =====================================================
+   RINGS
+===================================================== */
 
-const rings=[];
+const rings = [];
 
 
 for(
@@ -208,11 +208,10 @@ i++
 
 ){
 
-const geometry=
-
+const geometry =
 new THREE.TorusGeometry(
 
-1.5+i*0.45,
+1.5 + i*0.45,
 
 0.012,
 
@@ -223,8 +222,7 @@ new THREE.TorusGeometry(
 );
 
 
-const material=
-
+const material =
 new THREE.MeshBasicMaterial({
 
 color:0xffb300,
@@ -236,8 +234,7 @@ opacity:0.5
 });
 
 
-const ring=
-
+const ring =
 new THREE.Mesh(
 
 geometry,
@@ -247,13 +244,11 @@ material
 );
 
 
-ring.rotation.x=
-
+ring.rotation.x =
 Math.random()*Math.PI;
 
 
-ring.rotation.y=
-
+ring.rotation.y =
 Math.random()*Math.PI;
 
 
@@ -265,15 +260,14 @@ rings.push(ring);
 }
 
 
-/* =========================
+/* =====================================================
    NEURONS
-========================= */
+===================================================== */
 
-const nodes=[];
+const nodes = [];
 
 
-const nodeGeometry=
-
+const nodeGeometry =
 new THREE.SphereGeometry(
 
 0.045,
@@ -285,8 +279,7 @@ new THREE.SphereGeometry(
 );
 
 
-const nodeMaterial=
-
+const nodeMaterial =
 new THREE.MeshBasicMaterial({
 
 color:0xffd84a
@@ -304,35 +297,29 @@ i++
 
 ){
 
-const angle=
-
+const angle =
 Math.random()*Math.PI*2;
 
 
-const radius=
-
-1.5+
+const radius =
+1.5 +
 
 Math.random()*2.8;
 
 
-const x=
-
+const x =
 Math.cos(angle)*radius;
 
 
-const y=
-
+const y =
 (Math.random()-0.5)*2;
 
 
-const z=
-
+const z =
 Math.sin(angle)*radius;
 
 
-const node=
-
+const node =
 new THREE.Mesh(
 
 nodeGeometry,
@@ -344,7 +331,11 @@ nodeMaterial
 
 node.position.set(
 
-x,y,z
+x,
+
+y,
+
+z
 
 );
 
@@ -357,15 +348,14 @@ nodes.push(node);
 }
 
 
-/* =========================
-   NEURAL CONNECTIONS
-========================= */
+/* =====================================================
+   CONNECTIONS
+===================================================== */
 
-const lines=[];
+const lines = [];
 
 
-const lineMaterial=
-
+const lineMaterial =
 new THREE.LineBasicMaterial({
 
 color:0xffa800,
@@ -397,21 +387,20 @@ j++
 
 ){
 
-const target=
-
+const target =
 nodes[
 
 Math.floor(
 
-Math.random()*nodes.length
+Math.random()*
+nodes.length
 
 )
 
 ];
 
 
-const geometry=
-
+const geometry =
 new THREE.BufferGeometry()
 
 .setFromPoints([
@@ -423,8 +412,7 @@ target.position
 ]);
 
 
-const line=
-
+const line =
 new THREE.Line(
 
 geometry,
@@ -436,6 +424,7 @@ lineMaterial
 
 aiGroup.add(line);
 
+
 lines.push(line);
 
 }
@@ -443,25 +432,24 @@ lines.push(line);
 }
 
 
-/* =========================
-   SIGNAL PARTICLES
-========================= */
+/* =====================================================
+   SIGNALS
+===================================================== */
 
-const signals=[];
+const signals = [];
 
 
 for(
 
 let i=0;
 
-i<30;
+i<35;
 
 i++
 
 ){
 
-const geometry=
-
+const geometry =
 new THREE.SphereGeometry(
 
 0.04,
@@ -473,8 +461,7 @@ new THREE.SphereGeometry(
 );
 
 
-const material=
-
+const material =
 new THREE.MeshBasicMaterial({
 
 color:0xffffff
@@ -482,8 +469,7 @@ color:0xffffff
 });
 
 
-const signal=
-
+const signal =
 new THREE.Mesh(
 
 geometry,
@@ -493,7 +479,7 @@ material
 );
 
 
-signal.visible=false;
+signal.visible = false;
 
 
 aiGroup.add(signal);
@@ -504,9 +490,9 @@ signals.push(signal);
 }
 
 
-/* =========================
-   STATUS
-========================= */
+/* =====================================================
+   UI
+===================================================== */
 
 function setStatus(text){
 
@@ -514,7 +500,7 @@ document.getElementById(
 
 "status"
 
-).innerText=text;
+).innerText = text;
 
 }
 
@@ -525,19 +511,18 @@ document.getElementById(
 
 "response"
 
-).innerText=text;
+).innerText = text;
 
 }
 
 
-/* =========================
-   TYPING PANEL
-========================= */
+/* =====================================================
+   TYPING
+===================================================== */
 
 function toggleTyping(){
 
-const panel=
-
+const panel =
 document.getElementById(
 
 "typingPanel"
@@ -547,17 +532,20 @@ document.getElementById(
 
 if(
 
-panel.style.display==="block"
+panel.style.display ===
+"block"
 
 ){
 
-panel.style.display="none";
+panel.style.display =
+"none";
 
 }
 
 else{
 
-panel.style.display="block";
+panel.style.display =
+"block";
 
 
 document.getElementById(
@@ -573,8 +561,7 @@ document.getElementById(
 
 function sendTypedQuestion(){
 
-const input=
-
+const input =
 document.getElementById(
 
 "questionInput"
@@ -582,8 +569,7 @@ document.getElementById(
 );
 
 
-const question=
-
+const question =
 input.value
 
 .toLowerCase()
@@ -598,7 +584,7 @@ return;
 
 showResponse(
 
-"You: "+question
+"You: " + question
 
 );
 
@@ -610,12 +596,12 @@ question
 );
 
 
-input.value="";
+input.value = "";
 
 }
 
 
-/* ENTER KEY */
+/* ENTER */
 
 document.getElementById(
 
@@ -629,7 +615,8 @@ function(event){
 
 if(
 
-event.key==="Enter"
+event.key ===
+"Enter"
 
 ){
 
@@ -642,23 +629,23 @@ sendTypedQuestion();
 );
 
 
-/* =========================
-   ANSWER ANIMATION
-========================= */
+/* =====================================================
+   PROCESSING
+===================================================== */
 
 function startProcessing(){
 
-processing=true;
+processing = true;
 
 
 setStatus(
 
-"NEURAL NETWORK PROCESSING..."
+"⚡ NEURAL NETWORK PROCESSING..."
 
 );
 
 
-/* Bright core */
+/* CORE GLOW */
 
 coreMaterial.color.set(
 
@@ -667,31 +654,30 @@ coreMaterial.color.set(
 );
 
 
-glowMaterial.opacity=
-
+glowMaterial.opacity =
 0.5;
 
 
-/* Change core shape */
+/* KEEP ZOOM */
 
 core.scale.set(
 
-1.3,
+currentZoom,
 
-0.8,
+currentZoom,
 
-1.5
+currentZoom
 
 );
 
 
-/* Show signals */
+/* SIGNALS */
 
 signals.forEach(
 
-signal=>{
+signal => {
 
-signal.visible=true;
+signal.visible = true;
 
 }
 
@@ -702,7 +688,7 @@ signal.visible=true;
 
 function stopProcessing(){
 
-processing=false;
+processing = false;
 
 
 coreMaterial.color.set(
@@ -712,13 +698,11 @@ coreMaterial.color.set(
 );
 
 
-glowMaterial.opacity=
-
+glowMaterial.opacity =
 0.12;
 
 
-/* IMPORTANT:
-   Keep current zoom */
+/* KEEP ZOOM */
 
 core.scale.set(
 
@@ -733,9 +717,9 @@ currentZoom
 
 signals.forEach(
 
-signal=>{
+signal => {
 
-signal.visible=false;
+signal.visible = false;
 
 }
 
@@ -751,9 +735,9 @@ setStatus(
 }
 
 
-/* =========================
+/* =====================================================
    SIGNAL ANIMATION
-========================= */
+===================================================== */
 
 function animateSignals(){
 
@@ -764,21 +748,27 @@ return;
 
 signals.forEach(
 
-(signal,i)=>{
+(signal,i) => {
 
-const time=
+const time =
 
-(Date.now()*0.001+i*0.2)%1;
+(
+
+Date.now()*0.001 +
+
+i*0.15
+
+) % 1;
 
 
-const angle=
+const angle =
 
 i*0.7;
 
 
-const radius=
+const radius =
 
-1+
+1 +
 
 time*3;
 
@@ -798,18 +788,21 @@ Math.sin(angle)*radius
 );
 
 
-/* Pulsing */
+/* CORE PULSE */
 
-const pulse=
+const pulse =
 
-1+
+1 +
 
 Math.sin(
 
 Date.now()*0.01
 
-)*0.2;
+)*0.15;
 
+
+/* PULSE WITHOUT
+   CHANGING ZOOM */
 
 core.scale.set(
 
@@ -824,15 +817,15 @@ currentZoom*pulse
 }
 
 
-/* =========================
+/* =====================================================
    VOICE
-========================= */
+===================================================== */
 
 function startVoice(){
 
-const Recognition=
+const Recognition =
 
-window.SpeechRecognition||
+window.SpeechRecognition ||
 
 window.webkitSpeechRecognition;
 
@@ -841,7 +834,7 @@ if(!Recognition){
 
 respond(
 
-"Voice recognition is not supported in this browser."
+"Voice recognition is not supported."
 
 );
 
@@ -850,20 +843,21 @@ return;
 }
 
 
-const recognition=
+const recognition =
 
 new Recognition();
 
 
-recognition.lang=
-
+recognition.lang =
 "en-US";
 
 
-recognition.continuous=false;
+recognition.continuous =
+false;
 
 
-recognition.interimResults=false;
+recognition.interimResults =
+false;
 
 
 setStatus(
@@ -876,11 +870,11 @@ setStatus(
 recognition.start();
 
 
-recognition.onresult=
+recognition.onresult =
 
 function(event){
 
-const command=
+const command =
 
 event.results[0][0]
 
@@ -893,7 +887,7 @@ event.results[0][0]
 
 showResponse(
 
-"You: "+command
+"You: " + command
 
 );
 
@@ -906,25 +900,12 @@ command
 
 };
 
-
-recognition.onerror=
-
-function(){
-
-setStatus(
-
-"VOICE ERROR"
-
-);
-
-};
-
 }
 
 
-/* =========================
-   COMMAND PROCESSOR
-========================= */
+/* =====================================================
+   COMMANDS
+===================================================== */
 
 function processCommand(command){
 
@@ -939,7 +920,9 @@ command.includes("hello")
 
 ){
 
-setTimeout(()=>{
+setTimeout(
+
+() => {
 
 respond(
 
@@ -947,26 +930,32 @@ respond(
 
 );
 
-},1200);
+},
+
+1200
+
+);
 
 return;
 
 }
 
 
-/* MATH */
+/* 1+1 */
 
 if(
 
-command.includes("one plus one")||
+command.includes("one plus one") ||
 
-command.includes("1 plus 1")||
+command.includes("1 plus 1") ||
 
 command.includes("1+1")
 
 ){
 
-setTimeout(()=>{
+setTimeout(
+
+() => {
 
 respond(
 
@@ -974,7 +963,11 @@ respond(
 
 );
 
-},1200);
+},
+
+1200
+
+);
 
 return;
 
@@ -989,7 +982,9 @@ command.includes("are you dumb")
 
 ){
 
-setTimeout(()=>{
+setTimeout(
+
+() => {
 
 respond(
 
@@ -997,7 +992,11 @@ respond(
 
 );
 
-},1200);
+},
+
+1200
+
+);
 
 return;
 
@@ -1012,7 +1011,9 @@ command.includes("prototype")
 
 ){
 
-setTimeout(()=>{
+setTimeout(
+
+() => {
 
 respond(
 
@@ -1020,7 +1021,11 @@ respond(
 
 );
 
-},1200);
+},
+
+1200
+
+);
 
 return;
 
@@ -1035,7 +1040,9 @@ command.includes("your name")
 
 ){
 
-setTimeout(()=>{
+setTimeout(
+
+() => {
 
 respond(
 
@@ -1043,7 +1050,11 @@ respond(
 
 );
 
-},1200);
+},
+
+1200
+
+);
 
 return;
 
@@ -1058,7 +1069,9 @@ command.includes("who are you")
 
 ){
 
-setTimeout(()=>{
+setTimeout(
+
+() => {
 
 respond(
 
@@ -1066,7 +1079,11 @@ respond(
 
 );
 
-},1200);
+},
+
+1200
+
+);
 
 return;
 
@@ -1081,7 +1098,9 @@ command.includes("who is your boss")
 
 ){
 
-setTimeout(()=>{
+setTimeout(
+
+() => {
 
 respond(
 
@@ -1089,7 +1108,11 @@ respond(
 
 );
 
-},1200);
+},
+
+1200
+
+);
 
 return;
 
@@ -1104,7 +1127,9 @@ command.includes("open youtube")
 
 ){
 
-setTimeout(()=>{
+setTimeout(
+
+() => {
 
 respond(
 
@@ -1121,7 +1146,11 @@ window.open(
 
 );
 
-},1200);
+},
+
+1200
+
+);
 
 return;
 
@@ -1136,7 +1165,9 @@ command.includes("open roblox")
 
 ){
 
-setTimeout(()=>{
+setTimeout(
+
+() => {
 
 respond(
 
@@ -1145,12 +1176,14 @@ respond(
 );
 
 
-window.location.href=
+window.location.href =
 
 "roblox://";
 
 
-setTimeout(()=>{
+setTimeout(
+
+() => {
 
 window.open(
 
@@ -1160,9 +1193,17 @@ window.open(
 
 );
 
-},1500);
+},
 
-},1200);
+1500
+
+);
+
+},
+
+1200
+
+);
 
 return;
 
@@ -1177,7 +1218,9 @@ command.includes("open google")
 
 ){
 
-setTimeout(()=>{
+setTimeout(
+
+() => {
 
 respond(
 
@@ -1194,7 +1237,11 @@ window.open(
 
 );
 
-},1200);
+},
+
+1200
+
+);
 
 return;
 
@@ -1203,7 +1250,9 @@ return;
 
 /* UNKNOWN */
 
-setTimeout(()=>{
+setTimeout(
+
+() => {
 
 respond(
 
@@ -1211,20 +1260,24 @@ respond(
 
 );
 
-},1200);
+},
+
+1200
+
+);
 
 }
 
 
-/* =========================
+/* =====================================================
    ULTRON VOICE
-========================= */
+===================================================== */
 
 function respond(text){
 
 showResponse(
 
-"ULTRON: "+text
+"ULTRON: " + text
 
 );
 
@@ -1232,7 +1285,7 @@ showResponse(
 speechSynthesis.cancel();
 
 
-const speech=
+const speech =
 
 new SpeechSynthesisUtterance(
 
@@ -1241,20 +1294,19 @@ text
 );
 
 
-speech.rate=
-
+speech.rate =
 0.75;
 
 
-speech.pitch=
-
+speech.pitch =
 0.25;
 
 
-speech.volume=1;
+speech.volume =
+1;
 
 
-speech.onend=
+speech.onend =
 
 function(){
 
@@ -1272,11 +1324,11 @@ speech
 }
 
 
-/* =========================
+/* =====================================================
    HAND TRACKING
-========================= */
+===================================================== */
 
-const video=
+const video =
 
 document.getElementById(
 
@@ -1285,17 +1337,17 @@ document.getElementById(
 );
 
 
-const hands=
+const hands =
 
 new Hands({
 
 locateFile:
 
-file=>
+file =>
 
-"https://cdn.jsdelivr.net/npm/@mediapipe/hands/"
+"https://cdn.jsdelivr.net/npm/@mediapipe/hands/" +
 
-+file
+file
 
 });
 
@@ -1330,106 +1382,159 @@ results.multiHandLandmarks.length
 
 ){
 
-const hand=
+const hand =
 
 results.multiHandLandmarks[0];
 
 
-const index=
+const index =
 
 hand[8];
 
 
-const thumb=
+const thumb =
 
 hand[4];
 
 
-/* HAND ROTATION */
+/* =====================
+   ROTATE CORE
+===================== */
 
 if(
 
-lastHandX!==null
+lastHandX !== null
 
 ){
 
-const dx=
+const dx =
 
-index.x-lastHandX;
+index.x -
 
-
-const dy=
-
-index.y-lastHandY;
+lastHandX;
 
 
-aiGroup.rotation.y+=
+const dy =
+
+index.y -
+
+lastHandY;
+
+
+aiGroup.rotation.y +=
 
 dx*2;
 
 
-aiGroup.rotation.x+=
+aiGroup.rotation.x +=
 
 dy*2;
 
 }
 
 
-lastHandX=index.x;
+lastHandX =
 
-lastHandY=index.y;
-
-
-/* PINCH ZOOM */
-
-const dx=
-
-thumb.x-index.x;
+index.x;
 
 
-const dy=
+lastHandY =
 
-thumb.y-index.y;
+index.y;
 
 
-const distance=
+/* =====================
+   PINCH ZOOM
+===================== */
+
+const pinchX =
+
+thumb.x -
+
+index.x;
+
+
+const pinchY =
+
+thumb.y -
+
+index.y;
+
+
+const pinchDistance =
 
 Math.sqrt(
 
-dx*dx+dy*dy
+pinchX*pinchX +
+
+pinchY*pinchY
 
 );
 
 
-/* CLOSE = ZOOM IN */
+/* FIRST FRAME */
 
 if(
 
-distance<0.12
+previousPinchDistance !== null
 
 ){
 
-currentZoom+=0.01;
+const difference =
+
+pinchDistance -
+
+previousPinchDistance;
+
+
+/* FINGERS APART
+   = ZOOM IN */
+
+if(
+
+difference > 0.002
+
+){
+
+currentZoom +=
+
+difference *
+
+zoomSensitivity;
 
 }
 
 
-/* OPEN = ZOOM OUT */
+/* FINGERS TOGETHER
+   = ZOOM OUT */
 
-else if(
+if(
 
-distance>0.25
+difference < -0.002
 
 ){
 
-currentZoom-=0.01;
+currentZoom +=
+
+difference *
+
+zoomSensitivity;
 
 }
+
+}
+
+
+/* SAVE DISTANCE */
+
+previousPinchDistance =
+
+pinchDistance;
 
 
 /* LIMIT */
 
-currentZoom=
+currentZoom =
 
 Math.max(
 
@@ -1437,7 +1542,7 @@ Math.max(
 
 Math.min(
 
-3,
+4,
 
 currentZoom
 
@@ -1446,7 +1551,7 @@ currentZoom
 );
 
 
-/* KEEP ZOOM */
+/* APPLY */
 
 if(!processing){
 
@@ -1484,13 +1589,13 @@ setStatus(
 });
 
 
-/* =========================
-   HAND ON/OFF
-========================= */
+/* =====================================================
+   HAND ON / OFF
+===================================================== */
 
 async function toggleHandTracking(){
 
-const button=
+const button =
 
 document.getElementById(
 
@@ -1499,9 +1604,13 @@ document.getElementById(
 );
 
 
+/* OFF */
+
 if(handTrackingActive){
 
-handTrackingActive=false;
+handTrackingActive =
+
+false;
 
 
 if(cameraStream){
@@ -1512,28 +1621,46 @@ cameraStream
 
 .forEach(
 
-track=>track.stop()
+track =>
+
+track.stop()
 
 );
 
 }
 
 
-cameraStream=null;
+cameraStream = null;
 
 
-video.srcObject=null;
+video.srcObject =
+
+null;
 
 
-video.style.display="none";
+video.style.display =
+
+"none";
 
 
-lastHandX=null;
+lastHandX =
 
-lastHandY=null;
+null;
 
 
-button.innerText=
+lastHandY =
+
+null;
+
+
+/* RESET PINCH */
+
+previousPinchDistance =
+
+null;
+
+
+button.innerText =
 
 "✋ HAND: OFF";
 
@@ -1550,9 +1677,18 @@ return;
 }
 
 
+/* ON */
+
 try{
 
-cameraStream=
+setStatus(
+
+"STARTING CAMERA..."
+
+);
+
+
+cameraStream =
 
 await navigator.mediaDevices
 
@@ -1560,7 +1696,11 @@ await navigator.mediaDevices
 
 video:{
 
-facingMode:"user"
+facingMode:"user",
+
+width:640,
+
+height:480
 
 },
 
@@ -1569,23 +1709,34 @@ audio:false
 });
 
 
-video.srcObject=
+video.srcObject =
 
 cameraStream;
 
 
-video.style.display="block";
+video.style.display =
+
+"block";
 
 
 await video.play();
 
 
-handTrackingActive=true;
+handTrackingActive =
+
+true;
 
 
-button.innerText=
+button.innerText =
 
 "✋ HAND: ON";
+
+
+setStatus(
+
+"SHOW YOUR HAND"
+
+);
 
 
 processHandFrame();
@@ -1593,6 +1744,9 @@ processHandFrame();
 }
 
 catch(error){
+
+console.error(error);
+
 
 setStatus(
 
@@ -1605,9 +1759,9 @@ setStatus(
 }
 
 
-/* =========================
+/* =====================================================
    HAND LOOP
-========================= */
+===================================================== */
 
 async function processHandFrame(){
 
@@ -1616,13 +1770,33 @@ if(!handTrackingActive)
 return;
 
 
-if(video.readyState>=2){
+try{
+
+if(
+
+video.readyState >= 2
+
+){
 
 await hands.send({
 
 image:video
 
 });
+
+}
+
+}
+
+catch(error){
+
+console.log(
+
+"Hand tracking error",
+
+error
+
+);
 
 }
 
@@ -1640,13 +1814,13 @@ processHandFrame
 }
 
 
-/* =========================
+/* =====================================================
    TOUCH MODE
-========================= */
+===================================================== */
 
 function toggleTouchMode(){
 
-touchMode=
+touchMode =
 
 !touchMode;
 
@@ -1655,33 +1829,37 @@ document.getElementById(
 
 "touchButton"
 
-).innerText=
+).innerText =
 
-touchMode?
+touchMode
 
-"👆 TOUCH: ON":
+?
+
+"👆 TOUCH: ON"
+
+:
 
 "👆 TOUCH: OFF";
 
 }
 
 
-/* =========================
-   TOUCH ROTATION
-========================= */
+/* =====================================================
+   TOUCH CONTROL
+===================================================== */
 
-let tx=0;
+let touchX = 0;
 
-let ty=0;
+let touchY = 0;
 
 
 renderer.domElement.addEventListener(
 
 "touchstart",
 
-function(e){
+function(event){
 
-const now=
+const now =
 
 Date.now();
 
@@ -1690,11 +1868,17 @@ Date.now();
 
 if(
 
-now-lastTap<300
+now -
+
+lastTap < 300
 
 ){
 
-selected=true;
+coreMaterial.color.set(
+
+0xffffff
+
+);
 
 
 setStatus(
@@ -1704,14 +1888,9 @@ setStatus(
 );
 
 
-coreMaterial.color.set(
+setTimeout(
 
-0xffffff
-
-);
-
-
-setTimeout(()=>{
+() => {
 
 coreMaterial.color.set(
 
@@ -1719,31 +1898,46 @@ coreMaterial.color.set(
 
 );
 
-},1000);
+},
+
+1000
+
+);
 
 }
 
 
-lastTap=now;
+lastTap =
+
+now;
 
 
 if(
 
 touchMode &&
 
-e.touches.length===1
+event.touches.length === 1
 
 ){
 
-tx=e.touches[0].clientX;
+touchX =
 
-ty=e.touches[0].clientY;
+event.touches[0].clientX;
+
+
+touchY =
+
+event.touches[0].clientY;
 
 }
 
 },
 
-{passive:false}
+{
+
+passive:false
+
+}
 
 );
 
@@ -1752,73 +1946,77 @@ renderer.domElement.addEventListener(
 
 "touchmove",
 
-function(e){
+function(event){
 
-if(
-
-!touchMode
-
-)
+if(!touchMode)
 
 return;
 
 
-e.preventDefault();
+event.preventDefault();
 
 
 if(
 
-e.touches.length===1
+event.touches.length === 1
 
 ){
 
-const x=
+const x =
 
-e.touches[0].clientX;
-
-
-const y=
-
-e.touches[0].clientY;
+event.touches[0].clientX;
 
 
-aiGroup.rotation.y+=
+const y =
 
-(x-tx)*0.01;
-
-
-aiGroup.rotation.x+=
-
-(y-ty)*0.01;
+event.touches[0].clientY;
 
 
-tx=x;
+aiGroup.rotation.y +=
 
-ty=y;
+(x-touchX)*0.01;
+
+
+aiGroup.rotation.x +=
+
+(y-touchY)*0.01;
+
+
+touchX = x;
+
+touchY = y;
 
 }
 
 },
 
-{passive:false}
+{
+
+passive:false
+
+}
 
 );
 
 
-/* =========================
+/* =====================================================
    RESET
-========================= */
+===================================================== */
 
 function resetBrain(){
 
 aiGroup.rotation.set(
 
-0,0,0
+0,
+
+0,
+
+0
 
 );
 
 
-/* DO NOT RESET ZOOM */
+/* KEEP ZOOM */
 
 aiGroup.scale.set(
 
@@ -1847,9 +2045,9 @@ showResponse(
 }
 
 
-/* =========================
+/* =====================================================
    ANIMATION
-========================= */
+===================================================== */
 
 function animate(){
 
@@ -1860,27 +2058,32 @@ animate
 );
 
 
-core.rotation.x+=
+core.rotation.x +=
 
 0.008;
 
 
-core.rotation.y+=
+core.rotation.y +=
 
 0.012;
 
 
 rings.forEach(
 
-(ring,i)=>{
+(ring,i) => {
 
-ring.rotation.x+=
+ring.rotation.x +=
 
-0.001+i*0.0002;
+0.001 +
 
-ring.rotation.y+=
+i*0.0002;
 
-0.002+i*0.0003;
+
+ring.rotation.y +=
+
+0.002 +
+
+i*0.0003;
 
 }
 
@@ -1904,9 +2107,9 @@ camera
 animate();
 
 
-/* =========================
+/* =====================================================
    RESIZE
-========================= */
+===================================================== */
 
 window.addEventListener(
 
@@ -1914,9 +2117,9 @@ window.addEventListener(
 
 function(){
 
-camera.aspect=
+camera.aspect =
 
-window.innerWidth/
+window.innerWidth /
 
 window.innerHeight;
 
