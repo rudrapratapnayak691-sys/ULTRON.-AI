@@ -1,152 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
 
-  <meta
-    name="viewport"
-    content="width=device-width,
-    initial-scale=1.0,
-    maximum-scale=1.0,
-    user-scalable=no"
-  >
+<meta charset="UTF-8">
 
-  <title>ULTRON MARK 12</title>
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1.0,
+maximum-scale=1.0,
+user-scalable=no">
 
-  <link rel="stylesheet" href="style.css">
+<title>ULTRON MARK 11</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+
 </head>
 
 <body>
 
-  <div id="hud">
+<div id="title">
+ULTRON MARK 11
+</div>
 
-    <div class="topbar">
-      <div class="logo">
-        ULTRON <span>MARK 12</span>
-      </div>
+<div id="response">
+NEURAL CORE ONLINE
+</div>
 
-      <div id="status">
-        NEURAL SYSTEM ONLINE
-      </div>
-    </div>
+<div id="status">
+MARK 11 READY
+</div>
 
-    <!-- 3D Neural Network -->
-    <canvas id="neuralCanvas"></canvas>
+<video id="camera"
+autoplay
+playsinline
+muted>
+</video>
 
-    <!-- Left System Panel -->
-    <div class="panel left-panel">
+<div id="typingPanel">
 
-      <div class="panel-title">
-        NEURAL CORE
-      </div>
+<input
+id="questionInput"
+placeholder="Ask ULTRON MARK 11...">
 
-      <div class="line"></div>
+<button id="sendButton">
+SEND
+</button>
 
-      <div>
-        NETWORK:
-        <b id="networkStatus">ACTIVE</b>
-      </div>
+</div>
 
-      <div>
-        NEURONS:
-        <b id="neuronCount">0</b>
-      </div>
+<div class="buttons">
 
-      <div>
-        SIGNALS:
-        <b id="signalCount">0</b>
-      </div>
+<button id="handButton">
+✋ HAND OFF
+</button>
 
-      <div>
-        PROCESSING:
-        <b id="processing">IDLE</b>
-      </div>
+<button id="touchButton">
+👆 TOUCH OFF
+</button>
 
-    </div>
+<button id="voiceButton">
+🎤 VOICE
+</button>
 
-    <!-- Right System Panel -->
-    <div class="panel right-panel">
+<button id="typeButton">
+⌨️ TYPE
+</button>
 
-      <div class="panel-title">
-        SYSTEM
-      </div>
+<button id="resetButton">
+🔄 RESET
+</button>
 
-      <div class="line"></div>
+</div>
 
-      <div>
-        VOICE:
-        <b id="voiceStatus">READY</b>
-      </div>
-
-      <div>
-        HAND TRACKING:
-        <b>READY</b>
-      </div>
-
-      <div>
-        CORE:
-        <b>STABLE</b>
-      </div>
-
-    </div>
-
-    <!-- AI Response -->
-    <div id="response">
-      <span>ULTRON:</span>
-      Neural system ready, Boss.
-    </div>
-
-    <!-- Command Input -->
-    <div class="command-box">
-
-      <button id="micButton">
-        🎤
-      </button>
-
-      <input
-        id="commandInput"
-        type="text"
-        placeholder="Speak or type a command..."
-      >
-
-      <button id="sendButton">
-        ➤
-      </button>
-
-    </div>
-
-    <!-- Quick Launch -->
-    <div class="quick-buttons">
-
-      <button data-site="youtube">
-        YouTube
-      </button>
-
-      <button data-site="google">
-        Google
-      </button>
-
-      <button data-site="whatsapp">
-        WhatsApp
-      </button>
-
-      <button data-site="roblox">
-        Roblox
-      </button>
-
-      <button data-site="instagram">
-        Instagram
-      </button>
-
-      <button data-site="chatgpt">
-        ChatGPT
-      </button>
-
-    </div>
-
-  </div>
-
-  <script src="script.js"></script>
+<script src="script.js"></script>
 
 </body>
+
 </html>
