@@ -1,5 +1,6 @@
 /* =====================================================
-   ULTRON V4
+   ULTRON MARK 7
+   ADVANCED NEURAL AI CORE
 ===================================================== */
 
 
@@ -17,24 +18,45 @@ let lastHandX = null;
 
 let lastHandY = null;
 
-
-/* PERSISTENT ZOOM */
-
 let currentZoom = 1;
 
 let previousPinchDistance = null;
 
-let zoomSensitivity = 3;
-
-
-/* PROCESSING */
-
 let processing = false;
 
+let touchX = 0;
 
-/* DOUBLE TAP */
+let touchY = 0;
 
 let lastTap = 0;
+
+let signalCounter = 0;
+
+
+/* =====================================================
+   UI
+===================================================== */
+
+const responseBox =
+document.getElementById("response");
+
+const statusBox =
+document.getElementById("status");
+
+const inputBox =
+document.getElementById("questionInput");
+
+const typingPanel =
+document.getElementById("typingPanel");
+
+const handButton =
+document.getElementById("handButton");
+
+const touchButton =
+document.getElementById("touchButton");
+
+const cameraVideo =
+document.getElementById("camera");
 
 
 /* =====================================================
@@ -109,12 +131,11 @@ renderer.domElement
 const aiGroup =
 new THREE.Group();
 
-
 scene.add(aiGroup);
 
 
 /* =====================================================
-   CORE
+   CENTRAL CORE
 ===================================================== */
 
 const coreGeometry =
@@ -178,7 +199,7 @@ opacity:0.12
 });
 
 
-const glow =
+const coreGlow =
 new THREE.Mesh(
 
 glowGeometry,
@@ -188,11 +209,11 @@ glowMaterial
 );
 
 
-aiGroup.add(glow);
+aiGroup.add(coreGlow);
 
 
 /* =====================================================
-   RINGS
+   NEURAL RINGS
 ===================================================== */
 
 const rings = [];
@@ -200,9 +221,9 @@ const rings = [];
 
 for(
 
-let i=0;
+let i = 0;
 
-i<7;
+i < 10;
 
 i++
 
@@ -211,7 +232,9 @@ i++
 const geometry =
 new THREE.TorusGeometry(
 
-1.5 + i*0.45,
+1.5 +
+
+i * 0.38,
 
 0.012,
 
@@ -245,15 +268,16 @@ material
 
 
 ring.rotation.x =
-Math.random()*Math.PI;
+Math.random() *
+Math.PI;
 
 
 ring.rotation.y =
-Math.random()*Math.PI;
+Math.random() *
+Math.PI;
 
 
 aiGroup.add(ring);
-
 
 rings.push(ring);
 
@@ -261,7 +285,28 @@ rings.push(ring);
 
 
 /* =====================================================
-   NEURONS
+   NEURON TYPES
+===================================================== */
+
+const neuronTypes = [
+
+"logic",
+
+"voice",
+
+"language",
+
+"command",
+
+"thinking",
+
+"memory"
+
+];
+
+
+/* =====================================================
+   CREATE NEURONS
 ===================================================== */
 
 const nodes = [];
@@ -279,7 +324,47 @@ new THREE.SphereGeometry(
 );
 
 
-const nodeMaterial =
+for(
+
+let i = 0;
+
+i < 450;
+
+i++
+
+){
+
+const angle =
+Math.random() *
+Math.PI *
+2;
+
+
+const radius =
+1.5 +
+Math.random() *
+2.8;
+
+
+const x =
+Math.cos(angle) *
+radius;
+
+
+const y =
+(
+Math.random() -
+0.5
+) *
+2.5;
+
+
+const z =
+Math.sin(angle) *
+radius;
+
+
+const material =
 new THREE.MeshBasicMaterial({
 
 color:0xffd84a
@@ -287,44 +372,12 @@ color:0xffd84a
 });
 
 
-for(
-
-let i=0;
-
-i<300;
-
-i++
-
-){
-
-const angle =
-Math.random()*Math.PI*2;
-
-
-const radius =
-1.5 +
-
-Math.random()*2.8;
-
-
-const x =
-Math.cos(angle)*radius;
-
-
-const y =
-(Math.random()-0.5)*2;
-
-
-const z =
-Math.sin(angle)*radius;
-
-
 const node =
 new THREE.Mesh(
 
 nodeGeometry,
 
-nodeMaterial
+material
 
 );
 
@@ -340,8 +393,24 @@ z
 );
 
 
-aiGroup.add(node);
+node.userData.type =
 
+neuronTypes[
+
+Math.floor(
+
+Math.random() *
+neuronTypes.length
+
+)
+
+];
+
+
+node.userData.pulse = 0;
+
+
+aiGroup.add(node);
 
 nodes.push(node);
 
@@ -355,23 +424,11 @@ nodes.push(node);
 const lines = [];
 
 
-const lineMaterial =
-new THREE.LineBasicMaterial({
-
-color:0xffa800,
-
-transparent:true,
-
-opacity:0.2
-
-});
-
-
 for(
 
-let i=0;
+let i = 0;
 
-i<nodes.length;
+i < nodes.length;
 
 i++
 
@@ -379,20 +436,21 @@ i++
 
 for(
 
-let j=0;
+let j = 0;
 
-j<2;
+j < 2;
 
 j++
 
 ){
 
 const target =
+
 nodes[
 
 Math.floor(
 
-Math.random()*
+Math.random() *
 nodes.length
 
 )
@@ -401,6 +459,7 @@ nodes.length
 
 
 const geometry =
+
 new THREE.BufferGeometry()
 
 .setFromPoints([
@@ -412,18 +471,31 @@ target.position
 ]);
 
 
+const material =
+
+new THREE.LineBasicMaterial({
+
+color:0xffa800,
+
+transparent:true,
+
+opacity:0.15
+
+});
+
+
 const line =
+
 new THREE.Line(
 
 geometry,
 
-lineMaterial
+material
 
 );
 
 
 aiGroup.add(line);
-
 
 lines.push(line);
 
@@ -441,18 +513,19 @@ const signals = [];
 
 for(
 
-let i=0;
+let i = 0;
 
-i<35;
+i < 80;
 
 i++
 
 ){
 
 const geometry =
+
 new THREE.SphereGeometry(
 
-0.04,
+0.035,
 
 8,
 
@@ -462,6 +535,7 @@ new THREE.SphereGeometry(
 
 
 const material =
+
 new THREE.MeshBasicMaterial({
 
 color:0xffffff
@@ -470,6 +544,7 @@ color:0xffffff
 
 
 const signal =
+
 new THREE.Mesh(
 
 geometry,
@@ -481,9 +556,12 @@ material
 
 signal.visible = false;
 
+signal.userData.progress = 0;
+
+signal.userData.target = null;
+
 
 aiGroup.add(signal);
-
 
 signals.push(signal);
 
@@ -496,156 +574,170 @@ signals.push(signal);
 
 function setStatus(text){
 
-document.getElementById(
-
-"status"
-
-).innerText = text;
+statusBox.innerText = text;
 
 }
 
 
 function showResponse(text){
 
-document.getElementById(
-
-"response"
-
-).innerText = text;
+responseBox.innerText = text;
 
 }
 
 
 /* =====================================================
-   TYPING
+   RESET NEURONS
 ===================================================== */
 
-function toggleTyping(){
+function resetNeurons(){
 
-const panel =
-document.getElementById(
+nodes.forEach(node => {
 
-"typingPanel"
+node.userData.pulse = 0;
+
+node.material.color.set(
+
+0xffd84a
+
+);
+
+});
+
+
+signals.forEach(signal => {
+
+signal.visible = false;
+
+});
+
+}
+
+
+/* =====================================================
+   TASK NEURONS
+===================================================== */
+
+function activateTask(type){
+
+resetNeurons();
+
+
+const selected =
+
+nodes.filter(
+
+node =>
+
+node.userData.type === type
 
 );
 
 
-if(
+selected.forEach(node => {
 
-panel.style.display ===
-"block"
+node.userData.pulse = 1;
 
-){
+node.material.color.set(
 
-panel.style.display =
-"none";
-
-}
-
-else{
-
-panel.style.display =
-"block";
-
-
-document.getElementById(
-
-"questionInput"
-
-).focus();
-
-}
-
-}
-
-
-function sendTypedQuestion(){
-
-const input =
-document.getElementById(
-
-"questionInput"
+0xffffff
 
 );
 
-
-const question =
-input.value
-
-.toLowerCase()
-
-.trim();
+});
 
 
-if(!question)
+signals.forEach(
+
+(signal,index) => {
+
+if(!selected.length)
 
 return;
 
 
-showResponse(
+signal.visible = true;
 
-"You: " + question
+signal.userData.progress =
 
-);
+(index % 20) / 20;
 
+signal.userData.target =
 
-processCommand(
+selected[
 
-question
+index %
+selected.length
 
-);
+];
 
-
-input.value = "";
-
-}
-
-
-/* ENTER */
-
-document.getElementById(
-
-"questionInput"
-
-).addEventListener(
-
-"keydown",
-
-function(event){
-
-if(
-
-event.key ===
-"Enter"
-
-){
-
-sendTypedQuestion();
-
-}
-
-}
-
-);
-
-
-/* =====================================================
-   PROCESSING
-===================================================== */
-
-function startProcessing(){
-
-processing = true;
+});
 
 
 setStatus(
 
-"⚡ NEURAL NETWORK PROCESSING..."
+"⚡ " +
+
+type.toUpperCase() +
+
+" NEURAL NETWORK ACTIVE"
 
 );
 
+}
 
-/* CORE GLOW */
+
+/* =====================================================
+   MOVEMENT SIGNAL
+===================================================== */
+
+function movementSignal(){
+
+for(
+
+let i = 0;
+
+i < 15;
+
+i++
+
+){
+
+const target =
+
+nodes[
+
+Math.floor(
+
+Math.random() *
+nodes.length
+
+)
+
+];
+
+
+const signal =
+
+signals[
+
+signalCounter %
+signals.length
+
+];
+
+
+signalCounter++;
+
+
+signal.visible = true;
+
+signal.userData.progress = 0;
+
+signal.userData.target = target;
+
+}
+
 
 coreMaterial.color.set(
 
@@ -654,37 +746,195 @@ coreMaterial.color.set(
 );
 
 
-glowMaterial.opacity =
-0.5;
+setTimeout(
+
+() => {
+
+if(!processing){
+
+coreMaterial.color.set(
+
+0xffd000
+
+);
+
+}
+
+},
+
+100
+
+);
+
+}
 
 
-/* KEEP ZOOM */
+/* =====================================================
+   SIGNAL ANIMATION
+===================================================== */
+
+function animateSignals(){
+
+signals.forEach(signal => {
+
+if(!signal.visible)
+
+return;
+
+
+signal.userData.progress +=
+
+0.015;
+
+
+const target =
+
+signal.userData.target;
+
+
+if(!target)
+
+return;
+
+
+const start =
+
+new THREE.Vector3(
+
+0,0,0
+
+);
+
+
+signal.position.lerpVectors(
+
+start,
+
+target.position,
+
+signal.userData.progress
+
+);
+
+
+if(
+
+signal.userData.progress >= 1
+
+){
+
+target.userData.pulse = 1;
+
+target.material.color.set(
+
+0xffffff
+
+);
+
+
+signal.userData.progress = 0;
+
+}
+
+});
+
+
+nodes.forEach(node => {
+
+if(node.userData.pulse > 0){
+
+node.userData.pulse -= 0.02;
+
+
+if(
+
+node.userData.pulse <= 0
+
+){
+
+node.material.color.set(
+
+0xffd84a
+
+);
+
+}
+
+}
+
+});
+
+
+if(processing){
+
+const pulse =
+
+1 +
+
+Math.sin(
+
+Date.now() * 0.01
+
+) *
+
+0.15;
+
 
 core.scale.set(
 
-currentZoom,
+currentZoom * pulse,
 
-currentZoom,
+currentZoom * pulse,
 
-currentZoom
-
-);
-
-
-/* SIGNALS */
-
-signals.forEach(
-
-signal => {
-
-signal.visible = true;
-
-}
+currentZoom * pulse
 
 );
 
 }
 
+}
+
+
+/* =====================================================
+   START PROCESSING
+===================================================== */
+
+function startProcessing(task){
+
+processing = true;
+
+
+activateTask(task);
+
+
+coreMaterial.color.set(
+
+0xffffff
+
+);
+
+
+coreGlow.material.opacity = 0.6;
+
+
+/* Mark 7 core transformation */
+
+core.scale.set(
+
+currentZoom * 1.2,
+
+currentZoom * 0.8,
+
+currentZoom * 1.4
+
+);
+
+}
+
+
+/* =====================================================
+   STOP PROCESSING
+===================================================== */
 
 function stopProcessing(){
 
@@ -698,11 +948,8 @@ coreMaterial.color.set(
 );
 
 
-glowMaterial.opacity =
-0.12;
+coreGlow.material.opacity = 0.12;
 
-
-/* KEEP ZOOM */
 
 core.scale.set(
 
@@ -715,20 +962,16 @@ currentZoom
 );
 
 
-signals.forEach(
-
-signal => {
+signals.forEach(signal => {
 
 signal.visible = false;
 
-}
-
-);
+});
 
 
 setStatus(
 
-"ULTRON READY"
+"ULTRON MARK 7 READY"
 
 );
 
@@ -736,212 +979,183 @@ setStatus(
 
 
 /* =====================================================
-   SIGNAL ANIMATION
+   ULTRON MARK 7 VOICE
 ===================================================== */
 
-function animateSignals(){
+function respond(text){
 
-if(!processing)
+showResponse(
 
-return;
+"ULTRON MARK 7: " +
 
-
-signals.forEach(
-
-(signal,i) => {
-
-const time =
-
-(
-
-Date.now()*0.001 +
-
-i*0.15
-
-) % 1;
-
-
-const angle =
-
-i*0.7;
-
-
-const radius =
-
-1 +
-
-time*3;
-
-
-signal.position.set(
-
-Math.cos(angle)*radius,
-
-Math.sin(time*Math.PI*2)*1.5,
-
-Math.sin(angle)*radius
+text
 
 );
+
+
+coreMaterial.color.set(
+
+0xffffff
+
+);
+
+
+coreGlow.material.opacity = 0.9;
+
+
+speechSynthesis.cancel();
+
+
+const speech =
+
+new SpeechSynthesisUtterance(
+
+text
+
+);
+
+
+speech.rate = 0.76;
+
+
+/*
+  Lower pitch for a deeper
+  male-style voice
+*/
+
+speech.pitch = 0.35;
+
+speech.volume = 1.0;
+
+
+/*
+  Try to select a male voice
+*/
+
+const voices =
+
+speechSynthesis.getVoices();
+
+
+const maleVoice =
+
+voices.find(voice =>
+
+/male|david|daniel|alex|mark|google uk english male/i
+
+.test(voice.name)
+
+);
+
+
+if(maleVoice){
+
+speech.voice = maleVoice;
 
 }
 
-);
 
+speech.onstart = function(){
 
-/* CORE PULSE */
+setStatus(
 
-const pulse =
-
-1 +
-
-Math.sin(
-
-Date.now()*0.01
-
-)*0.15;
-
-
-/* PULSE WITHOUT
-   CHANGING ZOOM */
-
-core.scale.set(
-
-currentZoom*pulse,
-
-currentZoom*pulse,
-
-currentZoom*pulse
+"⚡ ULTRON MARK 7 SPEAKING"
 
 );
+
+};
+
+
+speech.onend = function(){
+
+stopProcessing();
+
+};
+
+
+speechSynthesis.speak(speech);
 
 }
 
 
 /* =====================================================
-   VOICE
+   COMMAND PROCESSOR
 ===================================================== */
 
-function startVoice(){
+function processCommand(
 
-const Recognition =
+command,
 
-window.SpeechRecognition ||
+inputType = "voice"
 
-window.webkitSpeechRecognition;
+){
 
+command =
 
-if(!Recognition){
-
-respond(
-
-"Voice recognition is not supported."
-
-);
-
-return;
-
-}
-
-
-const recognition =
-
-new Recognition();
-
-
-recognition.lang =
-"en-US";
-
-
-recognition.continuous =
-false;
-
-
-recognition.interimResults =
-false;
-
-
-setStatus(
-
-"🎤 LISTENING..."
-
-);
-
-
-recognition.start();
-
-
-recognition.onresult =
-
-function(event){
-
-const command =
-
-event.results[0][0]
-
-.transcript
+command
 
 .toLowerCase()
 
 .trim();
 
 
-showResponse(
-
-"You: " + command
-
-);
-
-
-processCommand(
-
-command
-
-);
-
-};
-
-}
-
-
-/* =====================================================
-   COMMANDS
-===================================================== */
-
-function processCommand(command){
-
-startProcessing();
-
-
-/* HELLO */
+/* LOGIC */
 
 if(
 
-command.includes("hello")
+command.includes("plus") ||
+
+command.includes("minus") ||
+
+command.includes("times") ||
+
+command.includes("multiply") ||
+
+command.includes("divide")
 
 ){
 
-setTimeout(
-
-() => {
-
-respond(
-
-"Hello, Boss. ULTRON is online."
-
-);
-
-},
-
-1200
-
-);
-
-return;
+startProcessing("logic");
 
 }
 
 
-/* 1+1 */
+/* COMMAND */
+
+else if(
+
+command.includes("open")
+
+){
+
+startProcessing("command");
+
+}
+
+
+/* VOICE */
+
+else if(
+
+inputType === "voice"
+
+){
+
+startProcessing("voice");
+
+}
+
+
+/* LANGUAGE */
+
+else{
+
+startProcessing("language");
+
+}
+
+
+/* 1 + 1 */
 
 if(
 
@@ -988,7 +1202,7 @@ setTimeout(
 
 respond(
 
-"No, Boss. I am ULTRON."
+"No, Boss. I am ULTRON MARK 7."
 
 );
 
@@ -1017,7 +1231,7 @@ setTimeout(
 
 respond(
 
-"Yes, Boss. I am currently a prototype."
+"Yes, Boss. I am the ULTRON MARK 7 prototype."
 
 );
 
@@ -1046,7 +1260,7 @@ setTimeout(
 
 respond(
 
-"My name is ULTRON, Boss."
+"My designation is ULTRON MARK 7, Boss."
 
 );
 
@@ -1061,7 +1275,7 @@ return;
 }
 
 
-/* WHO */
+/* WHO ARE YOU */
 
 if(
 
@@ -1075,7 +1289,7 @@ setTimeout(
 
 respond(
 
-"I am ULTRON, your personal AI assistant."
+"I am ULTRON MARK 7, your personal AI assistant."
 
 );
 
@@ -1105,6 +1319,35 @@ setTimeout(
 respond(
 
 "You are my Boss."
+
+);
+
+},
+
+1200
+
+);
+
+return;
+
+}
+
+
+/* HELLO */
+
+if(
+
+command.includes("hello")
+
+){
+
+setTimeout(
+
+() => {
+
+respond(
+
+"Hello, Boss. ULTRON MARK 7 is online."
 
 );
 
@@ -1176,26 +1419,11 @@ respond(
 );
 
 
-window.location.href =
-
-"roblox://";
-
-
-setTimeout(
-
-() => {
-
 window.open(
 
 "https://www.roblox.com",
 
 "_blank"
-
-);
-
-},
-
-1500
 
 );
 
@@ -1270,72 +1498,198 @@ respond(
 
 
 /* =====================================================
-   ULTRON VOICE
+   VOICE RECOGNITION
 ===================================================== */
 
-function respond(text){
+function startVoice(){
+
+const Recognition =
+
+window.SpeechRecognition ||
+
+window.webkitSpeechRecognition;
+
+
+if(!Recognition){
+
+respond(
+
+"Voice recognition is not supported by this browser."
+
+);
+
+return;
+
+}
+
+
+const recognition =
+
+new Recognition();
+
+
+recognition.lang = "en-US";
+
+recognition.continuous = false;
+
+recognition.interimResults = false;
+
+
+setStatus(
+
+"🎤 ULTRON MARK 7 LISTENING..."
+
+);
+
+
+recognition.start();
+
+
+recognition.onresult = function(event){
+
+const command =
+
+event.results[0][0]
+
+.transcript
+
+.toLowerCase()
+
+.trim();
+
 
 showResponse(
 
-"ULTRON: " + text
+"You: " +
+
+command
 
 );
 
 
-speechSynthesis.cancel();
+processCommand(
 
+command,
 
-const speech =
-
-new SpeechSynthesisUtterance(
-
-text
+"voice"
 
 );
-
-
-speech.rate =
-0.75;
-
-
-speech.pitch =
-0.25;
-
-
-speech.volume =
-1;
-
-
-speech.onend =
-
-function(){
-
-stopProcessing();
 
 };
 
 
-speechSynthesis.speak(
+recognition.onerror = function(){
 
-speech
+setStatus(
+
+"VOICE ERROR"
 
 );
+
+};
 
 }
 
 
 /* =====================================================
-   HAND TRACKING
+   TYPING
 ===================================================== */
 
-const video =
+function toggleTyping(){
 
-document.getElementById(
+if(
 
-"camera"
+typingPanel.style.display === "block"
+
+){
+
+typingPanel.style.display = "none";
+
+}
+
+else{
+
+typingPanel.style.display = "block";
+
+inputBox.focus();
+
+}
+
+}
+
+
+function sendTypedQuestion(){
+
+const question =
+
+inputBox.value
+
+.toLowerCase()
+
+.trim();
+
+
+if(!question)
+
+return;
+
+
+showResponse(
+
+"You: " +
+
+question
 
 );
 
+
+processCommand(
+
+question,
+
+"type"
+
+);
+
+
+inputBox.value = "";
+
+}
+
+
+document
+
+.getElementById("sendButton")
+
+.addEventListener(
+
+"click",
+
+sendTypedQuestion
+
+);
+
+
+inputBox.addEventListener(
+
+"keydown",
+
+function(event){
+
+if(event.key === "Enter"){
+
+sendTypedQuestion();
+
+}
+
+}
+
+);
+
+
+/* =====================================================
+   MEDIAPIPE HANDS
+===================================================== */
 
 const hands =
 
@@ -1387,92 +1741,77 @@ const hand =
 results.multiHandLandmarks[0];
 
 
-const index =
+const index = hand[8];
 
-hand[8];
-
-
-const thumb =
-
-hand[4];
+const thumb = hand[4];
 
 
-/* =====================
-   ROTATE CORE
-===================== */
+/* HAND MOVEMENT */
 
-if(
-
-lastHandX !== null
-
-){
+if(lastHandX !== null){
 
 const dx =
 
-index.x -
-
-lastHandX;
+index.x - lastHandX;
 
 
 const dy =
 
-index.y -
-
-lastHandY;
+index.y - lastHandY;
 
 
 aiGroup.rotation.y +=
 
-dx*2;
+dx * 2;
 
 
 aiGroup.rotation.x +=
 
-dy*2;
+dy * 2;
+
+
+if(
+
+Math.abs(dx) > 0.002 ||
+
+Math.abs(dy) > 0.002
+
+){
+
+movementSignal();
+
+}
 
 }
 
 
-lastHandX =
+lastHandX = index.x;
 
-index.x;
-
-
-lastHandY =
-
-index.y;
+lastHandY = index.y;
 
 
-/* =====================
-   PINCH ZOOM
-===================== */
+/* PINCH ZOOM */
 
 const pinchX =
 
-thumb.x -
-
-index.x;
+thumb.x - index.x;
 
 
 const pinchY =
 
-thumb.y -
-
-index.y;
+thumb.y - index.y;
 
 
 const pinchDistance =
 
 Math.sqrt(
 
-pinchX*pinchX +
+pinchX * pinchX +
 
-pinchY*pinchY
+pinchY * pinchY
 
 );
 
-
-/* FIRST FRAME */
 
 if(
 
@@ -1487,52 +1826,23 @@ pinchDistance -
 previousPinchDistance;
 
 
-/* FINGERS APART
-   = ZOOM IN */
-
-if(
-
-difference > 0.002
-
-){
+if(difference > 0.002){
 
 currentZoom +=
 
-difference *
-
-zoomSensitivity;
+difference * 3;
 
 }
 
 
-/* FINGERS TOGETHER
-   = ZOOM OUT */
-
-if(
-
-difference < -0.002
-
-){
+if(difference < -0.002){
 
 currentZoom +=
 
-difference *
-
-zoomSensitivity;
+difference * 3;
 
 }
 
-}
-
-
-/* SAVE DISTANCE */
-
-previousPinchDistance =
-
-pinchDistance;
-
-
-/* LIMIT */
 
 currentZoom =
 
@@ -1551,8 +1861,6 @@ currentZoom
 );
 
 
-/* APPLY */
-
 if(!processing){
 
 aiGroup.scale.set(
@@ -1567,10 +1875,17 @@ currentZoom
 
 }
 
+}
+
+
+previousPinchDistance =
+
+pinchDistance;
+
 
 setStatus(
 
-"✋ HAND TRACKING ACTIVE"
+"✋ MARK 7 HAND TRACKING ACTIVE"
 
 );
 
@@ -1595,22 +1910,9 @@ setStatus(
 
 async function toggleHandTracking(){
 
-const button =
-
-document.getElementById(
-
-"handButton"
-
-);
-
-
-/* OFF */
-
 if(handTrackingActive){
 
-handTrackingActive =
-
-false;
+handTrackingActive = false;
 
 
 if(cameraStream){
@@ -1621,9 +1923,7 @@ cameraStream
 
 .forEach(
 
-track =>
-
-track.stop()
+track => track.stop()
 
 );
 
@@ -1632,42 +1932,26 @@ track.stop()
 
 cameraStream = null;
 
+cameraVideo.srcObject = null;
 
-video.srcObject =
-
-null;
-
-
-video.style.display =
-
-"none";
+cameraVideo.style.display = "none";
 
 
-lastHandX =
+lastHandX = null;
 
-null;
+lastHandY = null;
 
-
-lastHandY =
-
-null;
+previousPinchDistance = null;
 
 
-/* RESET PINCH */
-
-previousPinchDistance =
-
-null;
-
-
-button.innerText =
+handButton.innerText =
 
 "✋ HAND: OFF";
 
 
 setStatus(
 
-"HAND TRACKING OFF"
+"MARK 7 HAND TRACKING OFF"
 
 );
 
@@ -1677,13 +1961,11 @@ return;
 }
 
 
-/* ON */
-
 try{
 
 setStatus(
 
-"STARTING CAMERA..."
+"STARTING MARK 7 CAMERA..."
 
 );
 
@@ -1709,25 +1991,23 @@ audio:false
 });
 
 
-video.srcObject =
+cameraVideo.srcObject =
 
 cameraStream;
 
 
-video.style.display =
+cameraVideo.style.display =
 
 "block";
 
 
-await video.play();
+await cameraVideo.play();
 
 
-handTrackingActive =
-
-true;
+handTrackingActive = true;
 
 
-button.innerText =
+handButton.innerText =
 
 "✋ HAND: ON";
 
@@ -1774,13 +2054,13 @@ try{
 
 if(
 
-video.readyState >= 2
+cameraVideo.readyState >= 2
 
 ){
 
 await hands.send({
 
-image:video
+image:cameraVideo
 
 });
 
@@ -1820,16 +2100,10 @@ processHandFrame
 
 function toggleTouchMode(){
 
-touchMode =
-
-!touchMode;
+touchMode = !touchMode;
 
 
-document.getElementById(
-
-"touchButton"
-
-).innerText =
+touchButton.innerText =
 
 touchMode
 
@@ -1841,17 +2115,27 @@ touchMode
 
 "👆 TOUCH: OFF";
 
+
+setStatus(
+
+touchMode
+
+?
+
+"TOUCH CONTROL ACTIVE"
+
+:
+
+"TOUCH CONTROL OFF"
+
+);
+
 }
 
 
 /* =====================================================
-   TOUCH CONTROL
+   TOUCH START
 ===================================================== */
-
-let touchX = 0;
-
-let touchY = 0;
-
 
 renderer.domElement.addEventListener(
 
@@ -1859,18 +2143,14 @@ renderer.domElement.addEventListener(
 
 function(event){
 
-const now =
-
-Date.now();
+const now = Date.now();
 
 
 /* DOUBLE TAP */
 
 if(
 
-now -
-
-lastTap < 300
+now - lastTap < 300
 
 ){
 
@@ -1881,22 +2161,34 @@ coreMaterial.color.set(
 );
 
 
+coreGlow.material.opacity = 0.9;
+
+
 setStatus(
 
-"⚡ NEURAL CORE SELECTED"
+"⚡ MARK 7 CORE SELECTED"
 
 );
+
+
+movementSignal();
 
 
 setTimeout(
 
 () => {
 
+if(!processing){
+
 coreMaterial.color.set(
 
 0xffd000
 
 );
+
+coreGlow.material.opacity = 0.12;
+
+}
 
 },
 
@@ -1907,9 +2199,7 @@ coreMaterial.color.set(
 }
 
 
-lastTap =
-
-now;
+lastTap = now;
 
 
 if(
@@ -1942,6 +2232,10 @@ passive:false
 );
 
 
+/* =====================================================
+   TOUCH MOVE
+===================================================== */
+
 renderer.domElement.addEventListener(
 
 "touchmove",
@@ -1972,14 +2266,37 @@ const y =
 event.touches[0].clientY;
 
 
+const dx =
+
+x - touchX;
+
+
+const dy =
+
+y - touchY;
+
+
 aiGroup.rotation.y +=
 
-(x-touchX)*0.01;
+dx * 0.01;
 
 
 aiGroup.rotation.x +=
 
-(y-touchY)*0.01;
+dy * 0.01;
+
+
+if(
+
+Math.abs(dx) > 1 ||
+
+Math.abs(dy) > 1
+
+){
+
+movementSignal();
+
+}
 
 
 touchX = x;
@@ -2016,7 +2333,7 @@ aiGroup.rotation.set(
 );
 
 
-/* KEEP ZOOM */
+/* Keep zoom */
 
 aiGroup.scale.set(
 
@@ -2029,20 +2346,97 @@ currentZoom
 );
 
 
-setStatus(
+resetNeurons();
 
-"NEURAL CORE RESET"
+
+coreMaterial.color.set(
+
+0xffd000
 
 );
+
+
+coreGlow.material.opacity = 0.12;
 
 
 showResponse(
 
-"ULTRON SYSTEM READY"
+"ULTRON MARK 7 SYSTEM READY"
 
 );
 
+
+setStatus(
+
+"ULTRON MARK 7 READY"
+
+);
+
+
+speechSynthesis.cancel();
+
 }
+
+
+/* =====================================================
+   BUTTONS
+===================================================== */
+
+handButton.addEventListener(
+
+"click",
+
+toggleHandTracking
+
+);
+
+
+touchButton.addEventListener(
+
+"click",
+
+toggleTouchMode
+
+);
+
+
+document
+
+.getElementById("voiceButton")
+
+.addEventListener(
+
+"click",
+
+startVoice
+
+);
+
+
+document
+
+.getElementById("typeButton")
+
+.addEventListener(
+
+"click",
+
+toggleTyping
+
+);
+
+
+document
+
+.getElementById("resetButton")
+
+.addEventListener(
+
+"click",
+
+resetBrain
+
+);
 
 
 /* =====================================================
@@ -2058,6 +2452,8 @@ animate
 );
 
 
+/* Core */
+
 core.rotation.x +=
 
 0.008;
@@ -2068,6 +2464,8 @@ core.rotation.y +=
 0.012;
 
 
+/* Rings */
+
 rings.forEach(
 
 (ring,i) => {
@@ -2076,22 +2474,26 @@ ring.rotation.x +=
 
 0.001 +
 
-i*0.0002;
+i * 0.0002;
 
 
 ring.rotation.y +=
 
 0.002 +
 
-i*0.0003;
+i * 0.0003;
 
 }
 
 );
 
 
+/* Signals */
+
 animateSignals();
 
+
+/* Render */
 
 renderer.render(
 
