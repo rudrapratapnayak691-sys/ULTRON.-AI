@@ -11,52 +11,91 @@ initial-scale=1.0,
 maximum-scale=1.0,
 user-scalable=no">
 
-<title>ULTRON AI</title>
+<title>ULTRON AI V2</title>
 
 <link rel="stylesheet" href="style.css">
 
 <!-- THREE.JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-<!-- MEDIAPIPE HAND TRACKING -->
+<!-- MEDIAPIPE HANDS -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
 </head>
 
 <body>
 
+<!-- TITLE -->
+
 <div id="title">
+
 ULTRON AI
+
 </div>
+
+
+<!-- AI RESPONSE -->
+
+<div id="response">
+
+NEURAL CORE ONLINE
+
+</div>
+
+
+<!-- STATUS -->
 
 <div id="status">
-NEURAL CORE ONLINE
-</div>
 
-<div class="buttons">
-
-<button onclick="resetBrain()">
-🔄 RESET
-</button>
-
-<button onclick="startVoice()">
-🎤 VOICE
-</button>
-
-<button onclick="toggleTouchMode()" id="touchButton">
-👆 TOUCH MODE: OFF
-</button>
-
-<button onclick="startHandTracking()">
-✋ HAND TRACKING
-</button>
+SYSTEM READY
 
 </div>
+
+
+<!-- CAMERA -->
 
 <video id="camera"
 autoplay
-playsinline>
+playsinline
+muted>
 </video>
+
+
+<!-- CONTROLS -->
+
+<div class="buttons">
+
+<button onclick="toggleHandTracking()"
+id="handButton">
+
+✋ HAND: OFF
+
+</button>
+
+
+<button onclick="toggleTouchMode()"
+id="touchButton">
+
+👆 TOUCH: OFF
+
+</button>
+
+
+<button onclick="startVoice()">
+
+🎤 VOICE
+
+</button>
+
+
+<button onclick="resetBrain()">
+
+🔄 RESET
+
+</button>
+
+</div>
+
 
 <script src="script.js"></script>
 
