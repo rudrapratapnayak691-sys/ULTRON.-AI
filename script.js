@@ -1,6 +1,6 @@
 /* ==========================================
-   ULTRON MARK 10
-   BROWSER AI VOICE + NEURAL CORE
+   ULTRON MARK 11
+   NEURAL CORE
 ========================================== */
 
 
@@ -24,7 +24,9 @@ let lastPinch = null;
 
 let lastTap = 0;
 
-let processing = false;
+let touchX = 0;
+
+let touchY = 0;
 
 
 /* ==========================================
@@ -48,11 +50,12 @@ document.getElementById("typingPanel");
 
 
 /* ==========================================
-   THREE JS
+   THREE.JS
 ========================================== */
 
 const scene =
 new THREE.Scene();
+
 
 const camera =
 new THREE.PerspectiveCamera(
@@ -66,6 +69,7 @@ innerWidth / innerHeight,
 1000
 
 );
+
 
 camera.position.z = 8;
 
@@ -91,7 +95,13 @@ innerHeight
 
 renderer.setPixelRatio(
 
-Math.min(devicePixelRatio,2)
+Math.min(
+
+devicePixelRatio,
+
+2
+
+)
 
 );
 
@@ -104,11 +114,12 @@ renderer.domElement
 
 
 /* ==========================================
-   NEURAL BRAIN
+   NEURAL SYSTEM
 ========================================== */
 
 const brain =
 new THREE.Group();
+
 
 scene.add(brain);
 
@@ -122,7 +133,9 @@ new THREE.Mesh(
 
 new THREE.IcosahedronGeometry(
 
-1,3
+1,
+
+3
 
 ),
 
@@ -180,16 +193,36 @@ brain.add(glow);
 const neurons = [];
 
 
-for(let i=0;i<300;i++){
+for(
+
+let i = 0;
+
+i < 300;
+
+i++
+
+){
 
 const angle =
-Math.random()*Math.PI*2;
+
+Math.random() *
+
+Math.PI *
+
+2;
+
 
 const radius =
-1.5+Math.random()*2.5;
+
+1.5 +
+
+Math.random() *
+
+2.5;
 
 
 const neuron =
+
 new THREE.Mesh(
 
 new THREE.SphereGeometry(
@@ -213,11 +246,23 @@ color:0xffd84a
 
 neuron.position.set(
 
-Math.cos(angle)*radius,
+Math.cos(angle) *
 
-(Math.random()-.5)*2.5,
+radius,
 
-Math.sin(angle)*radius
+(
+
+Math.random() -
+
+.5
+
+) *
+
+2.5,
+
+Math.sin(angle) *
+
+radius
 
 );
 
@@ -226,12 +271,15 @@ neuron.userData.type =
 
 Math.floor(
 
-Math.random()*5
+Math.random() *
+
+5
 
 );
 
 
 brain.add(neuron);
+
 
 neurons.push(neuron);
 
@@ -239,15 +287,23 @@ neurons.push(neuron);
 
 
 /* ==========================================
-   SIGNALS
+   NEURAL SIGNALS
 ========================================== */
 
-const signals=[];
+const signals = [];
 
 
-for(let i=0;i<40;i++){
+for(
 
-const signal=
+let i = 0;
+
+i < 50;
+
+i++
+
+){
+
+const signal =
 
 new THREE.Mesh(
 
@@ -270,14 +326,15 @@ color:0xffffff
 );
 
 
-signal.visible=false;
+signal.visible = false;
 
-signal.userData.progress=0;
+signal.userData.progress = 0;
 
-signal.userData.target=null;
+signal.userData.target = null;
 
 
 brain.add(signal);
+
 
 signals.push(signal);
 
@@ -285,74 +342,153 @@ signals.push(signal);
 
 
 /* ==========================================
-   SCREEN
+   SHOW RESPONSE
 ========================================== */
 
 function show(text){
 
-response.innerText=
+response.innerText =
 
-"ULTRON MARK 10: "+text;
+"ULTRON MARK 11: " +
+
+text;
 
 }
 
 
 /* ==========================================
-   ERROR
+   NEURAL ACTIVITY
 ========================================== */
 
-function error(){
+function activateNeurons(type){
 
-core.material.color.set(
+neurons.forEach(
 
-0xff0000
+neuron => {
 
-);
+neuron.material.color.set(
 
-glow.material.color.set(
-
-0xff0000
+0xffd84a
 
 );
 
-glow.material.opacity=.8;
-
-document.body.classList.add("error");
-
-status.innerText=
-
-"⚠️ NEURAL SYSTEM ERROR";
-
-
-setTimeout(()=>{
-
-core.material.color.set(
-
-0xffd000
+}
 
 );
 
-glow.material.color.set(
 
-0xff9900
+const selected =
+
+neurons.filter(
+
+neuron =>
+
+neuron.userData.type === type
 
 );
 
-glow.material.opacity=.12;
 
-document.body.classList.remove("error");
+selected.forEach(
 
-status.innerText=
+neuron => {
 
-"MARK 10 READY";
+neuron.material.color.set(
 
-},1500);
+0xffffff
+
+);
+
+});
+
+
+selected.forEach(
+
+(neuron,index) => {
+
+const signal =
+
+signals[
+
+index %
+
+signals.length
+
+];
+
+
+signal.visible = true;
+
+signal.userData.progress = 0;
+
+signal.userData.target = neuron;
+
+});
 
 }
 
 
 /* ==========================================
-   JARVIS STYLE BROWSER VOICE
+   SIGNAL ANIMATION
+========================================== */
+
+function animateSignals(){
+
+signals.forEach(
+
+signal => {
+
+if(
+
+!signal.visible ||
+
+!signal.userData.target
+
+)
+
+return;
+
+
+signal.userData.progress +=
+
+.025;
+
+
+signal.position.lerpVectors(
+
+new THREE.Vector3(
+
+0,
+
+0,
+
+0
+
+),
+
+signal.userData.target.position,
+
+signal.userData.progress
+
+);
+
+
+if(
+
+signal.userData.progress >= 1
+
+){
+
+signal.userData.progress = 0;
+
+}
+
+});
+
+}
+
+
+/* ==========================================
+   ULTRON VOICE
 ========================================== */
 
 function speak(text){
@@ -363,8 +499,6 @@ if(
 
 ){
 
-error();
-
 return;
 
 }
@@ -373,7 +507,7 @@ return;
 speechSynthesis.cancel();
 
 
-const speech=
+const speech =
 
 new SpeechSynthesisUtterance(
 
@@ -384,54 +518,54 @@ text
 
 /*
 
-Deep robotic AI settings
+Deep futuristic AI voice
 
 */
 
-speech.rate=.78;
+speech.rate = .78;
 
-speech.pitch=.35;
+speech.pitch = .35;
 
-speech.volume=1;
+speech.volume = 1;
 
 
-/*
-
-Find deepest available
-voice on device
-
-*/
-
-const voices=
+const voices =
 
 speechSynthesis.getVoices();
 
 
-const preferred=
+const voice =
 
-voices.find(v=>
+voices.find(
+
+v =>
 
 /David|Daniel|Alex|Google UK English Male|Microsoft David/i
 
-.test(v.name)
+.test(
+
+v.name
+
+)
 
 );
 
 
-if(preferred){
+if(voice){
 
-speech.voice=
-
-preferred;
+speech.voice = voice;
 
 }
 
 
-speech.onstart=()=>{
+speech.onstart =
 
-status.innerText=
+function(){
 
-"⚡ MARK 10 SPEAKING";
+status.innerText =
+
+"⚡ MARK 11 SPEAKING";
+
 
 core.material.color.set(
 
@@ -439,12 +573,17 @@ core.material.color.set(
 
 );
 
-glow.material.opacity=.8;
+
+glow.material.opacity =
+
+.8;
 
 };
 
 
-speech.onend=()=>{
+speech.onend =
+
+function(){
 
 core.material.color.set(
 
@@ -452,18 +591,15 @@ core.material.color.set(
 
 );
 
-glow.material.opacity=.12;
 
-status.innerText=
+glow.material.opacity =
 
-"MARK 10 READY";
-
-};
+.12;
 
 
-speech.onerror=()=>{
+status.innerText =
 
-error();
+"MARK 11 READY";
 
 };
 
@@ -478,47 +614,24 @@ speech
 
 
 /* ==========================================
-   RESPONSE
+   ANSWER
 ========================================== */
 
-function answer(text,type=1){
+function answer(
 
-processing=true;
+text,
 
+type = 1
+
+){
 
 show(text);
 
 
-neurons.forEach(n=>{
-
-n.material.color.set(
-
-0xffd84a
-
-);
-
-});
+activateNeurons(type);
 
 
-const selected=
-
-neurons.filter(n=>
-
-n.userData.type===type
-
-);
-
-
-selected.forEach(n=>{
-
-n.material.color.set(
-
-0xffffff
-
-);
-
-});
-
+/* Core glows */
 
 core.material.color.set(
 
@@ -526,80 +639,181 @@ core.material.color.set(
 
 );
 
-glow.material.opacity=.8;
+
+glow.material.opacity =
+
+.8;
 
 
 speak(text);
 
 
-setTimeout(()=>{
+setTimeout(
 
-processing=false;
+function(){
 
-},1500);
+core.material.color.set(
+
+0xffd000
+
+);
+
+
+glow.material.opacity =
+
+.12;
+
+
+signals.forEach(
+
+signal => {
+
+signal.visible = false;
+
+});
+
+
+},
+
+1800
+
+);
 
 }
 
 
 /* ==========================================
-   APP OPENING
+   OPEN APPS / WEBSITES
 ========================================== */
 
 function openApp(app){
 
-try{
+if(
 
-if(app==="youtube"){
+app === "youtube"
 
-location.href=
+){
+
+window.location.href =
 
 "https://m.youtube.com/";
 
 }
 
-else if(app==="instagram"){
 
-location.href=
+else if(
 
-"https://www.instagram.com/";
+app === "google"
 
-}
+){
 
-else if(app==="whatsapp"){
-
-location.href=
-
-"https://www.whatsapp.com/";
-
-}
-
-else if(app==="google"){
-
-location.href=
+window.location.href =
 
 "https://www.google.com/";
 
 }
 
-else if(app==="roblox"){
 
-location.href=
+else if(
+
+app === "whatsapp"
+
+){
+
+window.location.href =
+
+"https://www.whatsapp.com/";
+
+}
+
+
+else if(
+
+app === "roblox"
+
+){
+
+window.location.href =
 
 "https://www.roblox.com/";
 
 }
 
-else{
 
-throw new Error();
+else if(
+
+app === "instagram"
+
+){
+
+window.location.href =
+
+"https://www.instagram.com/";
 
 }
 
+
+else if(
+
+app === "facebook"
+
+){
+
+window.location.href =
+
+"https://www.facebook.com/";
+
 }
 
-catch(e){
 
-error();
+else if(
+
+app === "chatgpt"
+
+){
+
+window.location.href =
+
+"https://chatgpt.com/";
+
+}
+
+
+else if(
+
+app === "github"
+
+){
+
+window.location.href =
+
+"https://github.com/";
+
+}
+
+
+else if(
+
+app === "gmail"
+
+){
+
+window.location.href =
+
+"https://mail.google.com/";
+
+}
+
+
+else if(
+
+app === "chrome"
+
+){
+
+window.location.href =
+
+"https://www.google.com/";
 
 }
 
@@ -607,19 +821,31 @@ error();
 
 
 /* ==========================================
-   COMMANDS
+   COMMAND SYSTEM
 ========================================== */
 
 function command(text){
 
-text=
+text =
 
-text.toLowerCase().trim();
+text
+
+.toLowerCase()
+
+.trim();
 
 
-/* APP COMMANDS */
+/* YOUTUBE */
 
-if(text.includes("open youtube")){
+if(
+
+text.includes(
+
+"open youtube"
+
+)
+
+){
 
 answer(
 
@@ -629,66 +855,40 @@ answer(
 
 );
 
+
 setTimeout(
 
-()=>openApp("youtube"),
+function(){
 
-700
+openApp(
+
+"youtube"
 
 );
+
+},
+
+800
+
+);
+
 
 return;
 
 }
 
 
-if(text.includes("open instagram")){
+/* GOOGLE */
 
-answer(
+if(
 
-"Opening Instagram, Boss.",
+text.includes(
 
-3
+"open google"
 
-);
+)
 
-setTimeout(
-
-()=>openApp("instagram"),
-
-700
-
-);
-
-return;
-
-}
-
-
-if(text.includes("open whatsapp")){
-
-answer(
-
-"Opening WhatsApp, Boss.",
-
-3
-
-);
-
-setTimeout(
-
-()=>openApp("whatsapp"),
-
-700
-
-);
-
-return;
-
-}
-
-
-if(text.includes("open google")){
+){
 
 answer(
 
@@ -698,20 +898,83 @@ answer(
 
 );
 
+
 setTimeout(
 
-()=>openApp("google"),
+function(){
 
-700
+openApp(
+
+"google"
 
 );
+
+},
+
+800
+
+);
+
 
 return;
 
 }
 
 
-if(text.includes("open roblox")){
+/* WHATSAPP */
+
+if(
+
+text.includes(
+
+"open whatsapp"
+
+)
+
+){
+
+answer(
+
+"Opening WhatsApp, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"whatsapp"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* ROBLOX */
+
+if(
+
+text.includes(
+
+"open roblox"
+
+)
+
+){
 
 answer(
 
@@ -721,20 +984,288 @@ answer(
 
 );
 
+
 setTimeout(
 
-()=>openApp("roblox"),
+function(){
 
-700
+openApp(
+
+"roblox"
 
 );
+
+},
+
+800
+
+);
+
 
 return;
 
 }
 
 
-/* SIMPLE QUESTIONS */
+/* INSTAGRAM */
+
+if(
+
+text.includes(
+
+"open instagram"
+
+)
+
+){
+
+answer(
+
+"Opening Instagram, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"instagram"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* FACEBOOK */
+
+if(
+
+text.includes(
+
+"open facebook"
+
+)
+
+){
+
+answer(
+
+"Opening Facebook, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"facebook"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* CHATGPT */
+
+if(
+
+text.includes(
+
+"open chatgpt"
+
+)
+
+){
+
+answer(
+
+"Opening ChatGPT, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"chatgpt"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* GITHUB */
+
+if(
+
+text.includes(
+
+"open github"
+
+)
+
+){
+
+answer(
+
+"Opening GitHub, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"github"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* GMAIL */
+
+if(
+
+text.includes(
+
+"open gmail"
+
+)
+
+){
+
+answer(
+
+"Opening Gmail, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"gmail"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* CHROME */
+
+if(
+
+text.includes(
+
+"open chrome"
+
+)
+
+){
+
+answer(
+
+"Opening Google Chrome, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"chrome"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* 1 + 1 */
 
 if(
 
@@ -754,72 +1285,127 @@ answer(
 
 );
 
+
 return;
 
 }
 
 
-if(text.includes("are you dumb")){
+/* ARE YOU DUMB */
+
+if(
+
+text.includes(
+
+"are you dumb"
+
+)
+
+){
 
 answer(
 
-"No, Boss. I am ULTRON MARK 10.",
+"No, Boss. I am ULTRON MARK 11.",
 
 1
 
 );
 
+
 return;
 
 }
 
 
-if(text.includes("prototype")){
+/* PROTOTYPE */
+
+if(
+
+text.includes(
+
+"prototype"
+
+)
+
+){
 
 answer(
 
-"Yes, Boss. I am the ULTRON MARK 10 prototype.",
+"Yes, Boss. I am the ULTRON MARK 11 prototype.",
 
 2
 
 );
 
+
 return;
 
 }
 
 
-if(text.includes("your name")){
+/* NAME */
+
+if(
+
+text.includes(
+
+"your name"
+
+)
+
+){
 
 answer(
 
-"My designation is ULTRON MARK 10.",
+"My designation is ULTRON MARK 11.",
 
 2
 
 );
 
+
 return;
 
 }
 
 
-if(text.includes("who are you")){
+/* WHO */
+
+if(
+
+text.includes(
+
+"who are you"
+
+)
+
+){
 
 answer(
 
-"I am ULTRON MARK 10, your personal AI assistant.",
+"I am ULTRON MARK 11, your personal AI assistant.",
 
 2
 
 );
 
+
 return;
 
 }
 
 
-if(text.includes("hello")){
+/* HELLO */
+
+if(
+
+text.includes(
+
+"hello"
+
+)
+
+){
 
 answer(
 
@@ -828,6 +1414,40 @@ answer(
 1
 
 );
+
+
+return;
+
+}
+
+
+/* TIME */
+
+if(
+
+text.includes(
+
+"time"
+
+)
+
+){
+
+const now =
+
+new Date();
+
+
+answer(
+
+"The current time is " +
+
+now.toLocaleTimeString(),
+
+4
+
+);
+
 
 return;
 
@@ -848,12 +1468,12 @@ answer(
 
 
 /* ==========================================
-   VOICE INPUT
+   VOICE RECOGNITION
 ========================================== */
 
 function listen(){
 
-const Recognition=
+const Recognition =
 
 window.SpeechRecognition ||
 
@@ -862,26 +1482,38 @@ window.webkitSpeechRecognition;
 
 if(!Recognition){
 
-error();
+show(
+
+"Voice recognition is not supported."
+
+);
 
 return;
 
 }
 
 
-const recognition=
+const recognition =
 
 new Recognition();
 
 
-recognition.lang="en-US";
+recognition.lang =
 
-recognition.continuous=false;
-
-recognition.interimResults=false;
+"en-US";
 
 
-status.innerText=
+recognition.continuous =
+
+false;
+
+
+recognition.interimResults =
+
+false;
+
+
+status.innerText =
 
 "🎤 LISTENING...";
 
@@ -889,13 +1521,15 @@ status.innerText=
 recognition.start();
 
 
-recognition.onresult=
+recognition.onresult =
 
-event=>{
+function(event){
 
-const text=
+const text =
 
-event.results[0][0]
+event
+
+.results[0][0]
 
 .transcript;
 
@@ -905,11 +1539,13 @@ command(text);
 };
 
 
-recognition.onerror=
+recognition.onerror =
 
-()=>{
+function(){
 
-error();
+status.innerText =
+
+"MARK 11 READY";
 
 };
 
@@ -922,59 +1558,83 @@ error();
 
 function send(){
 
-const text=
+const text =
 
 input.value.trim();
 
 
-if(!text)return;
+if(!text)
+
+return;
 
 
 command(text);
 
 
-input.value="";
+input.value = "";
 
 }
 
 
-document.getElementById(
+document
+
+.getElementById(
 
 "sendButton"
 
-).onclick=send;
+)
+
+.onclick =
+
+send;
 
 
 input.addEventListener(
 
 "keydown",
 
-e=>{
+function(e){
 
-if(e.key==="Enter")
+if(
+
+e.key ===
+
+"Enter"
+
+){
 
 send();
+
+}
 
 });
 
 
-/* ==========================================
-   TYPING BUTTON
-========================================== */
+document
 
-document.getElementById(
+.getElementById(
 
 "typeButton"
 
-).onclick=()=>{
+)
 
-typing.style.display=
+.onclick =
 
-typing.style.display==="block"
+function(){
 
-?"none"
+typing.style.display =
 
-:"block";
+typing.style.display ===
+
+"block"
+
+?
+
+"none"
+
+:
+
+"block";
 
 };
 
@@ -983,15 +1643,17 @@ typing.style.display==="block"
    HAND TRACKING
 ========================================== */
 
-const hands=
+const hands =
 
 new Hands({
 
-locateFile:file=>
+locateFile:
+
+file =>
 
 "https://cdn.jsdelivr.net/npm/@mediapipe/hands/"
 
-+file
++ file
 
 });
 
@@ -1011,9 +1673,11 @@ minTrackingConfidence:.7
 
 hands.onResults(
 
-results=>{
+function(results){
 
-if(!handOn)return;
+if(!handOn)
+
+return;
 
 
 if(
@@ -1024,50 +1688,60 @@ results.multiHandLandmarks.length
 
 ){
 
-const hand=
+const hand =
 
 results.multiHandLandmarks[0];
 
 
-const index=hand[8];
+const index =
 
-const thumb=hand[4];
+hand[8];
+
+
+const thumb =
+
+hand[4];
 
 
 /* ROTATION */
 
-if(lastX!==null){
+if(lastX !== null){
 
-brain.rotation.y+=
+brain.rotation.y +=
 
 (index.x-lastX)*2;
 
 
-brain.rotation.x+=
+brain.rotation.x +=
 
 (index.y-lastY)*2;
 
 }
 
 
-lastX=index.x;
+lastX =
 
-lastY=index.y;
+index.x;
 
 
-/* PINCH ZOOM */
+lastY =
 
-const dx=
+index.y;
+
+
+/* PINCH */
+
+const dx =
 
 thumb.x-index.x;
 
 
-const dy=
+const dy =
 
 thumb.y-index.y;
 
 
-const distance=
+const distance =
 
 Math.sqrt(
 
@@ -1076,35 +1750,49 @@ dx*dx+dy*dy
 );
 
 
-if(lastPinch!==null){
+if(lastPinch !== null){
 
-zoom+=
+zoom +=
 
 (distance-lastPinch)*3;
 
 
-zoom=Math.max(
+zoom =
+
+Math.max(
 
 .5,
 
-Math.min(4,zoom)
+Math.min(
+
+4,
+
+zoom
+
+)
 
 );
 
 
 brain.scale.set(
 
-zoom,zoom,zoom
+zoom,
+
+zoom,
+
+zoom
 
 );
 
 }
 
 
-lastPinch=distance;
+lastPinch =
+
+distance;
 
 
-status.innerText=
+status.innerText =
 
 "✋ HAND TRACKING ACTIVE";
 
@@ -1121,26 +1809,40 @@ async function toggleHand(){
 
 if(handOn){
 
-handOn=false;
+handOn = false;
 
 
 if(stream){
 
-stream.getTracks()
+stream
 
-.forEach(t=>t.stop());
+.getTracks()
+
+.forEach(
+
+track =>
+
+track.stop()
+
+);
 
 }
 
 
-video.style.display="none";
+video.style.display =
+
+"none";
 
 
-document.getElementById(
+document
+
+.getElementById(
 
 "handButton"
 
-).innerText=
+)
+
+.innerText =
 
 "✋ HAND OFF";
 
@@ -1152,9 +1854,11 @@ return;
 
 try{
 
-stream=
+stream =
 
-await navigator.mediaDevices
+await navigator
+
+.mediaDevices
 
 .getUserMedia({
 
@@ -1165,24 +1869,28 @@ audio:false
 });
 
 
-video.srcObject=
+video.srcObject =
 
 stream;
 
 
-video.style.display=
+video.style.display =
 
 "block";
 
 
-handOn=true;
+handOn = true;
 
 
-document.getElementById(
+document
+
+.getElementById(
 
 "handButton"
 
-).innerText=
+)
+
+.innerText =
 
 "✋ HAND ON";
 
@@ -1191,9 +1899,13 @@ processHands();
 
 }
 
-catch(e){
+catch(error){
 
-error();
+show(
+
+"Camera permission is required, Boss."
+
+);
 
 }
 
@@ -1202,7 +1914,9 @@ error();
 
 async function processHands(){
 
-if(!handOn)return;
+if(!handOn)
+
+return;
 
 
 try{
@@ -1215,9 +1929,9 @@ image:video
 
 }
 
-catch(e){
+catch(error){
 
-error();
+/* No red error */
 
 }
 
@@ -1232,29 +1946,45 @@ processHands
 
 
 /* ==========================================
-   TOUCH MODE
+   TOUCH CONTROL
 ========================================== */
 
-document.getElementById(
+document
+
+.getElementById(
 
 "touchButton"
 
-).onclick=()=>{
+)
 
-touchOn=!touchOn;
+.onclick =
+
+function(){
+
+touchOn =
+
+!touchOn;
 
 
-document.getElementById(
+document
+
+.getElementById(
 
 "touchButton"
 
-).innerText=
+)
+
+.innerText =
 
 touchOn
 
-?"👆 TOUCH ON"
+?
 
-:"👆 TOUCH OFF";
+"👆 TOUCH ON"
+
+:
+
+"👆 TOUCH OFF";
 
 };
 
@@ -1263,18 +1993,26 @@ touchOn
    TOUCH ROTATION
 ========================================== */
 
-renderer.domElement.addEventListener(
+renderer
+
+.domElement
+
+.addEventListener(
 
 "touchstart",
 
-e=>{
+function(event){
 
-const now=Date.now();
+const now =
 
+Date.now();
+
+
+/* DOUBLE TAP */
 
 if(
 
-now-lastTap<300
+now-lastTap < 300
 
 ){
 
@@ -1289,63 +2027,92 @@ answer(
 }
 
 
-lastTap=now;
+lastTap =
+
+now;
 
 
 if(touchOn){
 
-touchX=
+touchX =
 
-e.touches[0].clientX;
+event
 
-touchY=
+.touches[0]
 
-e.touches[0].clientY;
+.clientX;
+
+
+touchY =
+
+event
+
+.touches[0]
+
+.clientY;
 
 }
 
 });
 
 
-renderer.domElement.addEventListener(
+renderer
+
+.domElement
+
+.addEventListener(
 
 "touchmove",
 
-e=>{
+function(event){
 
-if(!touchOn)return;
+if(!touchOn)
 
-
-e.preventDefault();
-
-
-const x=
-
-e.touches[0].clientX;
+return;
 
 
-const y=
-
-e.touches[0].clientY;
+event.preventDefault();
 
 
-brain.rotation.y+=
+const x =
+
+event
+
+.touches[0]
+
+.clientX;
+
+
+const y =
+
+event
+
+.touches[0]
+
+.clientY;
+
+
+brain.rotation.y +=
 
 (x-touchX)*.01;
 
 
-brain.rotation.x+=
+brain.rotation.x +=
 
 (y-touchY)*.01;
 
 
-touchX=x;
+touchX = x;
 
-touchY=y;
+touchY = y;
 
 },
 
-{passive:false}
+{
+
+passive:false
+
+}
 
 );
 
@@ -1354,27 +2121,41 @@ touchY=y;
    RESET
 ========================================== */
 
-document.getElementById(
+document
+
+.getElementById(
 
 "resetButton"
 
-).onclick=()=>{
+)
+
+.onclick =
+
+function(){
 
 brain.rotation.set(
 
-0,0,0
+0,
+
+0,
+
+0
 
 );
 
 
 brain.scale.set(
 
-1,1,1
+1,
+
+1,
+
+1
 
 );
 
 
-zoom=1;
+zoom = 1;
 
 
 core.material.color.set(
@@ -1384,12 +2165,14 @@ core.material.color.set(
 );
 
 
-glow.material.opacity=.12;
+glow.material.opacity =
+
+.12;
 
 
-status.innerText=
+status.innerText =
 
-"MARK 10 READY";
+"MARK 11 READY";
 
 
 show(
@@ -1405,20 +2188,28 @@ show(
    BUTTONS
 ========================================== */
 
-document.getElementById(
+document
+
+.getElementById(
 
 "handButton"
 
-).onclick=
+)
+
+.onclick =
 
 toggleHand;
 
 
-document.getElementById(
+document
+
+.getElementById(
 
 "voiceButton"
 
-).onclick=
+)
+
+.onclick =
 
 listen;
 
@@ -1436,34 +2227,51 @@ animate
 );
 
 
-core.rotation.x+=.008;
+core.rotation.x +=
 
-core.rotation.y+=.012;
+.008;
 
 
-neurons.forEach(n=>{
+core.rotation.y +=
+
+.012;
+
+
+animateSignals();
+
+
+neurons.forEach(
+
+neuron => {
 
 if(
 
-Math.random()<.01
+Math.random() < .01
 
 ){
 
-n.material.color.set(
+neuron.material.color.set(
 
 0xffffff
 
 );
 
-setTimeout(()=>{
 
-n.material.color.set(
+setTimeout(
+
+function(){
+
+neuron.material.color.set(
 
 0xffd84a
 
 );
 
-},150);
+},
+
+150
+
+);
 
 }
 
@@ -1488,11 +2296,19 @@ animate();
    RESIZE
 ========================================== */
 
-window.onresize=()=>{
+window
 
-camera.aspect=
+.addEventListener(
 
-innerWidth/innerHeight;
+"resize",
+
+function(){
+
+camera.aspect =
+
+innerWidth /
+
+innerHeight;
 
 
 camera.updateProjectionMatrix();
@@ -1506,4 +2322,4 @@ innerHeight
 
 );
 
-};
+});
