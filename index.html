@@ -11,48 +11,34 @@ initial-scale=1.0,
 maximum-scale=1.0,
 user-scalable=no">
 
-<title>ULTRON AI V2</title>
+<title>ULTRON AI V3</title>
 
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet"
+href="style.css">
 
-<!-- THREE.JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-<!-- MEDIAPIPE HANDS -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
 </head>
 
+
 <body>
 
-<!-- TITLE -->
-
 <div id="title">
-
-ULTRON AI
-
+ULTRON
 </div>
 
-
-<!-- AI RESPONSE -->
 
 <div id="response">
-
 NEURAL CORE ONLINE
-
 </div>
 
-
-<!-- STATUS -->
 
 <div id="status">
-
 SYSTEM READY
-
 </div>
 
-
-<!-- CAMERA -->
 
 <video id="camera"
 autoplay
@@ -61,11 +47,25 @@ muted>
 </video>
 
 
-<!-- CONTROLS -->
+<div id="typingPanel">
+
+<input
+id="questionInput"
+type="text"
+placeholder="Ask ULTRON anything..."
+autocomplete="off">
+
+<button onclick="sendTypedQuestion()">
+SEND
+</button>
+
+</div>
+
 
 <div class="buttons">
 
-<button onclick="toggleHandTracking()"
+<button
+onclick="toggleHandTracking()"
 id="handButton">
 
 ✋ HAND: OFF
@@ -73,7 +73,8 @@ id="handButton">
 </button>
 
 
-<button onclick="toggleTouchMode()"
+<button
+onclick="toggleTouchMode()"
 id="touchButton">
 
 👆 TOUCH: OFF
@@ -84,6 +85,13 @@ id="touchButton">
 <button onclick="startVoice()">
 
 🎤 VOICE
+
+</button>
+
+
+<button onclick="toggleTyping()">
+
+⌨️ TYPE
 
 </button>
 
