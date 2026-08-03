@@ -11,7 +11,7 @@ initial-scale=1.0,
 maximum-scale=1.0,
 user-scalable=no">
 
-<title>ULTRON AI V4</title>
+<title>ULTRON MARK 7</title>
 
 <link rel="stylesheet"
 href="style.css">
@@ -22,24 +22,19 @@ href="style.css">
 
 </head>
 
-
 <body>
 
-
 <div id="title">
-ULTRON
+ULTRON MARK 7
 </div>
-
 
 <div id="response">
-NEURAL CORE ONLINE
+MARK 7 NEURAL CORE ONLINE
 </div>
-
 
 <div id="status">
-SYSTEM READY
+ULTRON MARK 7 READY
 </div>
-
 
 <video
 id="camera"
@@ -48,69 +43,43 @@ playsinline
 muted>
 </video>
 
-
 <div id="typingPanel">
 
 <input
 id="questionInput"
 type="text"
-placeholder="Ask ULTRON..."
+placeholder="Ask ULTRON MARK 7..."
 autocomplete="off">
 
-<button onclick="sendTypedQuestion()">
+<button id="sendButton">
 SEND
 </button>
 
 </div>
 
-
 <div class="buttons">
 
-
-<button
-onclick="toggleHandTracking()"
-id="handButton">
-
+<button id="handButton">
 ✋ HAND: OFF
-
 </button>
 
-
-<button
-onclick="toggleTouchMode()"
-id="touchButton">
-
+<button id="touchButton">
 👆 TOUCH: OFF
-
 </button>
 
-
-<button
-onclick="startVoice()">
-
+<button id="voiceButton">
 🎤 VOICE
-
 </button>
 
-
-<button
-onclick="toggleTyping()">
-
+<button id="typeButton">
 ⌨️ TYPE
-
 </button>
 
-
-<button
-onclick="resetBrain()">
-
+<button id="resetButton">
 🔄 RESET
-
 </button>
-
 
 </div>
-
 
 <script src="script.js"></script>
 
