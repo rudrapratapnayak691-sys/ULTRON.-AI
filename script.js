@@ -1,12 +1,12 @@
 /* =====================================================
-   ULTRON MARK 7
-   ADVANCED NEURAL AI CORE
+   ULTRON MARK 8
+   NEURAL CORE + HAND TRACKING + APP COMMANDS
 ===================================================== */
 
 
-/* =====================================================
+/* =========================
    VARIABLES
-===================================================== */
+========================= */
 
 let handTrackingActive = false;
 
@@ -33,9 +33,9 @@ let lastTap = 0;
 let signalCounter = 0;
 
 
-/* =====================================================
+/* =========================
    UI
-===================================================== */
+========================= */
 
 const responseBox =
 document.getElementById("response");
@@ -59,9 +59,9 @@ const cameraVideo =
 document.getElementById("camera");
 
 
-/* =====================================================
+/* =========================
    THREE.JS
-===================================================== */
+========================= */
 
 const scene =
 new THREE.Scene();
@@ -124,9 +124,9 @@ renderer.domElement
 );
 
 
-/* =====================================================
+/* =========================
    AI GROUP
-===================================================== */
+========================= */
 
 const aiGroup =
 new THREE.Group();
@@ -134,9 +134,9 @@ new THREE.Group();
 scene.add(aiGroup);
 
 
-/* =====================================================
-   CENTRAL CORE
-===================================================== */
+/* =========================
+   CORE
+========================= */
 
 const coreGeometry =
 new THREE.IcosahedronGeometry(
@@ -171,9 +171,9 @@ coreMaterial
 aiGroup.add(core);
 
 
-/* =====================================================
+/* =========================
    CORE GLOW
-===================================================== */
+========================= */
 
 const glowGeometry =
 new THREE.SphereGeometry(
@@ -212,9 +212,9 @@ glowMaterial
 aiGroup.add(coreGlow);
 
 
-/* =====================================================
+/* =========================
    NEURAL RINGS
-===================================================== */
+========================= */
 
 const rings = [];
 
@@ -232,9 +232,7 @@ i++
 const geometry =
 new THREE.TorusGeometry(
 
-1.5 +
-
-i * 0.38,
+1.5 + i * 0.38,
 
 0.012,
 
@@ -268,13 +266,11 @@ material
 
 
 ring.rotation.x =
-Math.random() *
-Math.PI;
+Math.random() * Math.PI;
 
 
 ring.rotation.y =
-Math.random() *
-Math.PI;
+Math.random() * Math.PI;
 
 
 aiGroup.add(ring);
@@ -284,9 +280,9 @@ rings.push(ring);
 }
 
 
-/* =====================================================
+/* =========================
    NEURON TYPES
-===================================================== */
+========================= */
 
 const neuronTypes = [
 
@@ -305,9 +301,9 @@ const neuronTypes = [
 ];
 
 
-/* =====================================================
-   CREATE NEURONS
-===================================================== */
+/* =========================
+   NEURONS
+========================= */
 
 const nodes = [];
 
@@ -400,6 +396,7 @@ neuronTypes[
 Math.floor(
 
 Math.random() *
+
 neuronTypes.length
 
 )
@@ -417,12 +414,9 @@ nodes.push(node);
 }
 
 
-/* =====================================================
-   CONNECTIONS
-===================================================== */
-
-const lines = [];
-
+/* =========================
+   NEURAL CONNECTIONS
+========================= */
 
 for(
 
@@ -451,6 +445,7 @@ nodes[
 Math.floor(
 
 Math.random() *
+
 nodes.length
 
 )
@@ -497,16 +492,14 @@ material
 
 aiGroup.add(line);
 
-lines.push(line);
-
 }
 
 }
 
 
-/* =====================================================
+/* =========================
    SIGNALS
-===================================================== */
+========================= */
 
 const signals = [];
 
@@ -522,7 +515,6 @@ i++
 ){
 
 const geometry =
-
 new THREE.SphereGeometry(
 
 0.035,
@@ -535,7 +527,6 @@ new THREE.SphereGeometry(
 
 
 const material =
-
 new THREE.MeshBasicMaterial({
 
 color:0xffffff
@@ -544,7 +535,6 @@ color:0xffffff
 
 
 const signal =
-
 new THREE.Mesh(
 
 geometry,
@@ -568,9 +558,9 @@ signals.push(signal);
 }
 
 
-/* =====================================================
+/* =========================
    UI
-===================================================== */
+========================= */
 
 function setStatus(text){
 
@@ -586,9 +576,9 @@ responseBox.innerText = text;
 }
 
 
-/* =====================================================
+/* =========================
    RESET NEURONS
-===================================================== */
+========================= */
 
 function resetNeurons(){
 
@@ -614,9 +604,9 @@ signal.visible = false;
 }
 
 
-/* =====================================================
-   TASK NEURONS
-===================================================== */
+/* =========================
+   ACTIVATE TASK
+========================= */
 
 function activateTask(type){
 
@@ -666,8 +656,7 @@ signal.userData.target =
 
 selected[
 
-index %
-selected.length
+index % selected.length
 
 ];
 
@@ -687,9 +676,9 @@ type.toUpperCase() +
 }
 
 
-/* =====================================================
+/* =========================
    MOVEMENT SIGNAL
-===================================================== */
+========================= */
 
 function movementSignal(){
 
@@ -710,6 +699,7 @@ nodes[
 Math.floor(
 
 Math.random() *
+
 nodes.length
 
 )
@@ -722,6 +712,7 @@ const signal =
 signals[
 
 signalCounter %
+
 signals.length
 
 ];
@@ -769,9 +760,9 @@ coreMaterial.color.set(
 }
 
 
-/* =====================================================
+/* =========================
    SIGNAL ANIMATION
-===================================================== */
+========================= */
 
 function animateSignals(){
 
@@ -895,9 +886,9 @@ currentZoom * pulse
 }
 
 
-/* =====================================================
-   START PROCESSING
-===================================================== */
+/* =========================
+   PROCESSING
+========================= */
 
 function startProcessing(task){
 
@@ -916,25 +907,8 @@ coreMaterial.color.set(
 
 coreGlow.material.opacity = 0.6;
 
-
-/* Mark 7 core transformation */
-
-core.scale.set(
-
-currentZoom * 1.2,
-
-currentZoom * 0.8,
-
-currentZoom * 1.4
-
-);
-
 }
 
-
-/* =====================================================
-   STOP PROCESSING
-===================================================== */
 
 function stopProcessing(){
 
@@ -971,22 +945,22 @@ signal.visible = false;
 
 setStatus(
 
-"ULTRON MARK 7 READY"
+"ULTRON MARK 8 READY"
 
 );
 
 }
 
 
-/* =====================================================
-   ULTRON MARK 7 VOICE
-===================================================== */
+/* =========================
+   ULTRON VOICE
+========================= */
 
 function respond(text){
 
 showResponse(
 
-"ULTRON MARK 7: " +
+"ULTRON MARK 8: " +
 
 text
 
@@ -1017,20 +991,10 @@ text
 
 speech.rate = 0.76;
 
-
-/*
-  Lower pitch for a deeper
-  male-style voice
-*/
-
 speech.pitch = 0.35;
 
-speech.volume = 1.0;
+speech.volume = 1;
 
-
-/*
-  Try to select a male voice
-*/
 
 const voices =
 
@@ -1041,7 +1005,7 @@ const maleVoice =
 
 voices.find(voice =>
 
-/male|david|daniel|alex|mark|google uk english male/i
+/male|david|daniel|alex|mark/i
 
 .test(voice.name)
 
@@ -1059,7 +1023,7 @@ speech.onstart = function(){
 
 setStatus(
 
-"⚡ ULTRON MARK 7 SPEAKING"
+"⚡ ULTRON MARK 8 SPEAKING"
 
 );
 
@@ -1074,6 +1038,60 @@ stopProcessing();
 
 
 speechSynthesis.speak(speech);
+
+}
+
+
+/* =====================================================
+   APP LAUNCHER
+===================================================== */
+
+function openApp(app){
+
+if(app === "youtube"){
+
+window.location.href =
+"youtube://";
+
+}
+
+else if(app === "roblox"){
+
+window.location.href =
+"roblox://";
+
+}
+
+else if(app === "instagram"){
+
+window.location.href =
+"instagram://";
+
+}
+
+else if(app === "whatsapp"){
+
+window.location.href =
+"whatsapp://";
+
+}
+
+else if(app === "chrome"){
+
+window.location.href =
+"googlechrome://";
+
+}
+
+else{
+
+respond(
+
+"I don't have access to that application yet, Boss."
+
+);
+
+}
 
 }
 
@@ -1099,7 +1117,153 @@ command
 .trim();
 
 
-/* LOGIC */
+/* =========================
+   APP COMMANDS
+========================= */
+
+if(
+
+command.includes("open youtube")
+
+){
+
+startProcessing("command");
+
+
+setTimeout(() => {
+
+respond(
+
+"Opening YouTube, Boss."
+
+);
+
+
+openApp("youtube");
+
+},1000);
+
+
+return;
+
+}
+
+
+if(
+
+command.includes("open roblox")
+
+){
+
+startProcessing("command");
+
+
+setTimeout(() => {
+
+respond(
+
+"Opening Roblox, Boss."
+
+);
+
+
+openApp("roblox");
+
+},1000);
+
+
+return;
+
+}
+
+
+if(
+
+command.includes("open instagram")
+
+){
+
+startProcessing("command");
+
+
+setTimeout(() => {
+
+respond(
+
+"Opening Instagram, Boss."
+
+);
+
+
+openApp("instagram");
+
+},1000);
+
+
+return;
+
+}
+
+
+if(
+
+command.includes("open whatsapp")
+
+){
+
+startProcessing("command");
+
+
+setTimeout(() => {
+
+respond(
+
+"Opening WhatsApp, Boss."
+
+);
+
+
+openApp("whatsapp");
+
+},1000);
+
+
+return;
+
+}
+
+
+if(
+
+command.includes("open chrome")
+
+){
+
+startProcessing("command");
+
+
+setTimeout(() => {
+
+respond(
+
+"Opening Chrome, Boss."
+
+);
+
+
+openApp("chrome");
+
+},1000);
+
+
+return;
+
+}
+
+
+/* =========================
+   LOGIC
+========================= */
 
 if(
 
@@ -1120,20 +1284,9 @@ startProcessing("logic");
 }
 
 
-/* COMMAND */
-
-else if(
-
-command.includes("open")
-
-){
-
-startProcessing("command");
-
-}
-
-
-/* VOICE */
+/* =========================
+   VOICE
+========================= */
 
 else if(
 
@@ -1146,7 +1299,9 @@ startProcessing("voice");
 }
 
 
-/* LANGUAGE */
+/* =========================
+   LANGUAGE
+========================= */
 
 else{
 
@@ -1155,7 +1310,9 @@ startProcessing("language");
 }
 
 
-/* 1 + 1 */
+/* =========================
+   1 + 1
+========================= */
 
 if(
 
@@ -1188,7 +1345,9 @@ return;
 }
 
 
-/* DUMB */
+/* =========================
+   DUMB
+========================= */
 
 if(
 
@@ -1202,7 +1361,7 @@ setTimeout(
 
 respond(
 
-"No, Boss. I am ULTRON MARK 7."
+"No, Boss. I am ULTRON MARK 8."
 
 );
 
@@ -1217,7 +1376,9 @@ return;
 }
 
 
-/* PROTOTYPE */
+/* =========================
+   PROTOTYPE
+========================= */
 
 if(
 
@@ -1231,7 +1392,7 @@ setTimeout(
 
 respond(
 
-"Yes, Boss. I am the ULTRON MARK 7 prototype."
+"Yes, Boss. I am the ULTRON MARK 8 prototype."
 
 );
 
@@ -1246,7 +1407,9 @@ return;
 }
 
 
-/* NAME */
+/* =========================
+   NAME
+========================= */
 
 if(
 
@@ -1260,7 +1423,7 @@ setTimeout(
 
 respond(
 
-"My designation is ULTRON MARK 7, Boss."
+"My designation is ULTRON MARK 8, Boss."
 
 );
 
@@ -1275,7 +1438,9 @@ return;
 }
 
 
-/* WHO ARE YOU */
+/* =========================
+   WHO ARE YOU
+========================= */
 
 if(
 
@@ -1289,7 +1454,7 @@ setTimeout(
 
 respond(
 
-"I am ULTRON MARK 7, your personal AI assistant."
+"I am ULTRON MARK 8, your personal AI assistant."
 
 );
 
@@ -1304,7 +1469,9 @@ return;
 }
 
 
-/* BOSS */
+/* =========================
+   BOSS
+========================= */
 
 if(
 
@@ -1333,7 +1500,9 @@ return;
 }
 
 
-/* HELLO */
+/* =========================
+   HELLO
+========================= */
 
 if(
 
@@ -1347,7 +1516,7 @@ setTimeout(
 
 respond(
 
-"Hello, Boss. ULTRON MARK 7 is online."
+"Hello, Boss. ULTRON MARK 8 is online."
 
 );
 
@@ -1362,121 +1531,9 @@ return;
 }
 
 
-/* YOUTUBE */
-
-if(
-
-command.includes("open youtube")
-
-){
-
-setTimeout(
-
-() => {
-
-respond(
-
-"Opening YouTube, Boss."
-
-);
-
-
-window.open(
-
-"https://www.youtube.com",
-
-"_blank"
-
-);
-
-},
-
-1200
-
-);
-
-return;
-
-}
-
-
-/* ROBLOX */
-
-if(
-
-command.includes("open roblox")
-
-){
-
-setTimeout(
-
-() => {
-
-respond(
-
-"Opening Roblox, Boss."
-
-);
-
-
-window.open(
-
-"https://www.roblox.com",
-
-"_blank"
-
-);
-
-},
-
-1200
-
-);
-
-return;
-
-}
-
-
-/* GOOGLE */
-
-if(
-
-command.includes("open google")
-
-){
-
-setTimeout(
-
-() => {
-
-respond(
-
-"Opening Google, Boss."
-
-);
-
-
-window.open(
-
-"https://www.google.com",
-
-"_blank"
-
-);
-
-},
-
-1200
-
-);
-
-return;
-
-}
-
-
-/* UNKNOWN */
+/* =========================
+   UNKNOWN
+========================= */
 
 setTimeout(
 
@@ -1537,7 +1594,7 @@ recognition.interimResults = false;
 
 setStatus(
 
-"🎤 ULTRON MARK 7 LISTENING..."
+"🎤 ULTRON MARK 8 LISTENING..."
 
 );
 
@@ -1688,7 +1745,7 @@ sendTypedQuestion();
 
 
 /* =====================================================
-   MEDIAPIPE HANDS
+   HAND TRACKING
 ===================================================== */
 
 const hands =
@@ -1826,22 +1883,9 @@ pinchDistance -
 previousPinchDistance;
 
 
-if(difference > 0.002){
-
 currentZoom +=
 
 difference * 3;
-
-}
-
-
-if(difference < -0.002){
-
-currentZoom +=
-
-difference * 3;
-
-}
 
 
 currentZoom =
@@ -1885,7 +1929,7 @@ pinchDistance;
 
 setStatus(
 
-"✋ MARK 7 HAND TRACKING ACTIVE"
+"✋ MARK 8 HAND TRACKING ACTIVE"
 
 );
 
@@ -1905,7 +1949,7 @@ setStatus(
 
 
 /* =====================================================
-   HAND ON / OFF
+   HAND TRACKING ON/OFF
 ===================================================== */
 
 async function toggleHandTracking(){
@@ -1951,7 +1995,7 @@ handButton.innerText =
 
 setStatus(
 
-"MARK 7 HAND TRACKING OFF"
+"MARK 8 HAND TRACKING OFF"
 
 );
 
@@ -1965,7 +2009,7 @@ try{
 
 setStatus(
 
-"STARTING MARK 7 CAMERA..."
+"STARTING MARK 8 CAMERA..."
 
 );
 
@@ -2146,8 +2190,6 @@ function(event){
 const now = Date.now();
 
 
-/* DOUBLE TAP */
-
 if(
 
 now - lastTap < 300
@@ -2166,7 +2208,7 @@ coreGlow.material.opacity = 0.9;
 
 setStatus(
 
-"⚡ MARK 7 CORE SELECTED"
+"⚡ MARK 8 CORE SELECTED"
 
 );
 
@@ -2333,8 +2375,6 @@ aiGroup.rotation.set(
 );
 
 
-/* Keep zoom */
-
 aiGroup.scale.set(
 
 currentZoom,
@@ -2361,14 +2401,14 @@ coreGlow.material.opacity = 0.12;
 
 showResponse(
 
-"ULTRON MARK 7 SYSTEM READY"
+"ULTRON MARK 8 SYSTEM READY"
 
 );
 
 
 setStatus(
 
-"ULTRON MARK 7 READY"
+"ULTRON MARK 8 READY"
 
 );
 
@@ -2452,19 +2492,10 @@ animate
 );
 
 
-/* Core */
+core.rotation.x += 0.008;
 
-core.rotation.x +=
+core.rotation.y += 0.012;
 
-0.008;
-
-
-core.rotation.y +=
-
-0.012;
-
-
-/* Rings */
 
 rings.forEach(
 
@@ -2488,12 +2519,8 @@ i * 0.0003;
 );
 
 
-/* Signals */
-
 animateSignals();
 
-
-/* Render */
 
 renderer.render(
 
