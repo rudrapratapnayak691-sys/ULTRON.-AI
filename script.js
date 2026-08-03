@@ -1,1511 +1,2325 @@
-const canvas =
-  document.getElementById("neuralCanvas");
-
-const ctx =
-  canvas.getContext("2d");
-
-const neuronCountElement =
-  document.getElementById("neuronCount");
-
-const signalCountElement =
-  document.getElementById("signalCount");
-
-const processingElement =
-  document.getElementById("processing");
-
-const responseElement =
-  document.getElementById("response");
-
-const commandInput =
-  document.getElementById("commandInput");
-
-const micButton =
-  document.getElementById("micButton");
-
-const sendButton =
-  document.getElementById("sendButton");
-
-const voiceStatus =
-  document.getElementById("voiceStatus");
+/* ==========================================
+   ULTRON MARK 12
+   NEURAL CORE
+========================================== */
 
 
-let width;
-let height;
+/* ==========================================
+   VARIABLES
+========================================== */
 
-let neurons = [];
+let handOn = false;
 
-let signals = [];
+let touchOn = false;
 
-let rotationX = 0;
+let stream = null;
 
-let rotationY = 0;
+let lastX = null;
+
+let lastY = null;
 
 let zoom = 1;
 
-let dragging = false;
-
-let lastX = 0;
-
-let lastY = 0;
+let lastPinch = null;
 
 let lastTap = 0;
 
-let processing = false;
+let touchX = 0;
+
+let touchY = 0;
 
 
-/* =========================
-   RESIZE
-========================= */
+/* ==========================================
+   UI
+========================================== */
 
-function resize() {
+const response =
+document.getElementById("response");
 
-  width =
-    canvas.width =
-    window.innerWidth;
+const status =
+document.getElementById("status");
 
-  height =
-    canvas.height =
-    window.innerHeight;
+const video =
+document.getElementById("camera");
 
-  createNeuralNetwork();
-}
+const input =
+document.getElementById("questionInput");
 
-window.addEventListener(
-  "resize",
-  resize
+const typing =
+document.getElementById("typingPanel");
+
+
+/* ==========================================
+   THREE.JS
+========================================== */
+
+const scene =
+new THREE.Scene();
+
+
+const camera =
+new THREE.PerspectiveCamera(
+
+60,
+
+innerWidth / innerHeight,
+
+.1,
+
+1000
+
 );
 
 
-/* =========================
-   CREATE NEURAL NETWORK
-========================= */
+camera.position.z = 8;
 
-function createNeuralNetwork() {
 
-  neurons = [];
+const renderer =
+new THREE.WebGLRenderer({
 
-  const count =
-    window.innerWidth < 600
-      ? 180
-      : 350;
+antialias:true,
 
-  for (
-    let i = 0;
-    i < count;
-    i++
-  ) {
+alpha:true
 
-    const radius =
-      Math.random() * 270;
+});
 
-    const theta =
-      Math.random() *
-      Math.PI * 2;
 
-    const phi =
-      Math.acos(
-        Math.random() * 2 - 1
-      );
+renderer.setSize(
 
-    neurons.push({
+innerWidth,
 
-      x:
-        radius *
-        Math.sin(phi) *
-        Math.cos(theta),
+innerHeight
 
-      y:
-        radius *
-        Math.sin(phi) *
-        Math.sin(theta),
+);
 
-      z:
-        radius *
-        Math.cos(phi),
 
-      size:
-        Math.random() * 2 + 1,
+renderer.setPixelRatio(
 
-      pulse:
-        Math.random() *
-        Math.PI * 2,
+Math.min(
 
-      cluster:
-        Math.floor(
-          Math.random() * 6
-        )
+devicePixelRatio,
 
-    });
-  }
+2
 
-  neuronCountElement.textContent =
-    neurons.length;
-}
+)
 
+);
 
-/* =========================
-   3D PROJECTION
-========================= */
 
-function project(n) {
+document.body.appendChild(
 
-  let x = n.x;
+renderer.domElement
 
-  let y = n.y;
+);
 
-  let z = n.z;
 
+/* ==========================================
+   NEURAL SYSTEM
+========================================== */
 
-  const cosY =
-    Math.cos(rotationY);
+const brain =
+new THREE.Group();
 
-  const sinY =
-    Math.sin(rotationY);
 
+scene.add(brain);
 
-  let x1 =
-    x * cosY -
-    z * sinY;
 
-  let z1 =
-    x * sinY +
-    z * cosY;
+/* ==========================================
+   CORE
+========================================== */
 
+const core =
+new THREE.Mesh(
 
-  const cosX =
-    Math.cos(rotationX);
+new THREE.IcosahedronGeometry(
 
-  const sinX =
-    Math.sin(rotationX);
+1,
 
+3
 
-  let y1 =
-    y * cosX -
-    z1 * sinX;
+),
 
-  let z2 =
-    y * sinX +
-    z1 * cosX;
+new THREE.MeshBasicMaterial({
 
+color:0xffd000,
 
-  const perspective =
-    700 /
-    (700 + z2);
+wireframe:true
 
+})
 
-  return {
+);
 
-    x:
-      width / 2 +
-      x1 *
-      perspective *
-      zoom,
 
-    y:
-      height / 2 +
-      y1 *
-      perspective *
-      zoom,
+brain.add(core);
 
-    scale:
-      perspective *
-      zoom,
 
-    z:
-      z2
+/* ==========================================
+   CORE GLOW
+========================================== */
 
-  };
-}
+const glow =
+new THREE.Mesh(
 
+new THREE.SphereGeometry(
 
-/* =========================
-   BACKGROUND
-========================= */
+1.3,
 
-function drawBackground() {
+32,
 
-  ctx.fillStyle =
-    "rgba(2,2,2,0.25)";
+32
 
-  ctx.fillRect(
-    0,
-    0,
-    width,
-    height
-  );
+),
 
+new THREE.MeshBasicMaterial({
 
-  const gradient =
-    ctx.createRadialGradient(
+color:0xff9900,
 
-      width / 2,
+transparent:true,
 
-      height / 2,
+opacity:.12
 
-      10,
+})
 
-      width / 2,
+);
 
-      height / 2,
 
-      420
+brain.add(glow);
 
-    );
 
-
-  gradient.addColorStop(
-    0,
-    "rgba(255,180,30,.15)"
-  );
-
-  gradient.addColorStop(
-    .4,
-    "rgba(255,140,0,.03)"
-  );
-
-  gradient.addColorStop(
-    1,
-    "rgba(0,0,0,0)"
-  );
-
-
-  ctx.fillStyle =
-    gradient;
-
-  ctx.fillRect(
-    0,
-    0,
-    width,
-    height
-  );
-}
-
-
-/* =========================
-   CONNECTIONS
-========================= */
-
-function drawConnections(
-  projected
-) {
-
-  for (
-    let i = 0;
-    i < neurons.length;
-    i++
-  ) {
-
-    for (
-      let j = i + 1;
-      j < neurons.length;
-      j++
-    ) {
-
-      const a =
-        neurons[i];
-
-      const b =
-        neurons[j];
-
-
-      const dx =
-        a.x - b.x;
-
-      const dy =
-        a.y - b.y;
-
-      const dz =
-        a.z - b.z;
-
-
-      const distance =
-        Math.sqrt(
-
-          dx * dx +
-
-          dy * dy +
-
-          dz * dz
-
-        );
-
-
-      if (
-        distance < 75
-      ) {
-
-        const pa =
-          projected[i];
-
-        const pb =
-          projected[j];
-
-
-        const alpha =
-          Math.max(
-
-            0.03,
-
-            0.16 -
-            distance / 600
-
-          );
-
-
-        ctx.beginPath();
-
-        ctx.moveTo(
-          pa.x,
-          pa.y
-        );
-
-        ctx.lineTo(
-          pb.x,
-          pb.y
-        );
-
-
-        ctx.strokeStyle =
-          `rgba(
-            255,
-            190,
-            40,
-            ${alpha}
-          )`;
-
-
-        ctx.lineWidth =
-          0.5;
-
-
-        ctx.stroke();
-
-      }
-    }
-  }
-}
-
-
-/* =========================
+/* ==========================================
    NEURONS
-========================= */
+========================================== */
 
-function drawNeurons(
-  projected,
-  time
-) {
-
-  for (
-    let i = 0;
-    i < neurons.length;
-    i++
-  ) {
-
-    const n =
-      neurons[i];
-
-    const p =
-      projected[i];
+const neurons = [];
 
 
-    const pulse =
+for(
 
-      Math.sin(
+let i = 0;
 
-        time * 0.003 +
+i < 300;
 
-        n.pulse
+i++
 
-      ) * 0.5 + 0.5;
+){
 
+const angle =
 
-    const size =
+Math.random() *
 
-      (
-        n.size +
+Math.PI *
 
-        pulse * 1.5
-
-      ) *
-
-      p.scale;
+2;
 
 
-    ctx.beginPath();
+const radius =
+
+1.5 +
+
+Math.random() *
+
+2.5;
 
 
-    ctx.arc(
+const neuron =
 
-      p.x,
+new THREE.Mesh(
 
-      p.y,
+new THREE.SphereGeometry(
 
-      Math.max(
-        0.5,
-        size
-      ),
+.045,
 
-      0,
+8,
 
-      Math.PI * 2
+8
 
-    );
+),
 
+new THREE.MeshBasicMaterial({
 
-    ctx.fillStyle =
+color:0xffd84a
 
-      `rgba(
-        255,
-        210,
-        80,
-        ${0.45 +
-        pulse * 0.55}
-      )`;
+})
+
+);
 
 
-    ctx.shadowBlur =
-      10 * p.scale;
+neuron.position.set(
+
+Math.cos(angle) *
+
+radius,
+
+(
+
+Math.random() -
+
+.5
+
+) *
+
+2.5,
+
+Math.sin(angle) *
+
+radius
+
+);
 
 
-    ctx.shadowColor =
-      "#ffb300";
+neuron.userData.type =
+
+Math.floor(
+
+Math.random() *
+
+5
+
+);
 
 
-    ctx.fill();
+brain.add(neuron);
 
 
-    ctx.shadowBlur =
-      0;
+neurons.push(neuron);
 
-  }
 }
 
 
-/* =========================
-   GOLDEN PLASMA WAVES
-========================= */
+/* ==========================================
+   NEURAL SIGNALS
+========================================== */
 
-function drawPlasmaWaves(
-  time
-) {
-
-  const cx =
-    width / 2;
-
-  const cy =
-    height / 2;
+const signals = [];
 
 
-  for (
-    let wave = 0;
-    wave < 5;
-    wave++
-  ) {
+for(
 
-    ctx.beginPath();
+let i = 0;
 
+i < 50;
 
-    for (
-      let i = 0;
-      i <= 360;
-      i += 3
-    ) {
+i++
 
-      const angle =
-        i *
-        Math.PI /
-        180;
+){
 
+const signal =
 
-      const radius =
+new THREE.Mesh(
 
-        130 +
+new THREE.SphereGeometry(
 
-        wave * 28 +
+.035,
 
-        Math.sin(
+8,
 
-          angle * 5 +
+8
 
-          time * 0.003 +
+),
 
-          wave
+new THREE.MeshBasicMaterial({
 
-        ) *
+color:0xffffff
 
-        12;
+})
+
+);
 
 
-      const x =
+signal.visible = false;
 
-        cx +
+signal.userData.progress = 0;
 
-        Math.cos(angle) *
-
-        radius;
+signal.userData.target = null;
 
 
-      const y =
-
-        cy +
-
-        Math.sin(angle) *
-
-        radius *
-
-        0.35;
+brain.add(signal);
 
 
-      if (
-        i === 0
-      ) {
+signals.push(signal);
 
-        ctx.moveTo(
-          x,
-          y
-        );
-
-      } else {
-
-        ctx.lineTo(
-          x,
-          y
-        );
-
-      }
-
-    }
-
-
-    ctx.strokeStyle =
-
-      `rgba(
-        255,
-        180,
-        30,
-        ${0.12 +
-        wave * 0.015}
-      )`;
-
-
-    ctx.lineWidth =
-      1.5;
-
-
-    ctx.shadowBlur =
-      12;
-
-
-    ctx.shadowColor =
-      "#ffb300";
-
-
-    ctx.stroke();
-
-
-    ctx.shadowBlur =
-      0;
-
-  }
 }
 
 
-/* =========================
-   CENTRAL CORE
-========================= */
+/* ==========================================
+   SHOW RESPONSE
+========================================== */
 
-function drawCore(
-  time
-) {
+function show(text){
 
-  const cx =
-    width / 2;
+response.innerText =
 
-  const cy =
-    height / 2;
+"ULTRON MARK 11: " +
 
+text;
 
-  const pulse =
-
-    Math.sin(
-      time * 0.004
-    ) * 0.5 + 0.5;
-
-
-  const radius =
-
-    30 +
-
-    pulse * 8;
-
-
-  const gradient =
-
-    ctx.createRadialGradient(
-
-      cx,
-
-      cy,
-
-      2,
-
-      cx,
-
-      cy,
-
-      radius * 3
-
-    );
-
-
-  gradient.addColorStop(
-    0,
-    "rgba(255,255,220,1)"
-  );
-
-  gradient.addColorStop(
-    .15,
-    "rgba(255,210,70,.95)"
-  );
-
-  gradient.addColorStop(
-    .4,
-    "rgba(255,150,0,.4)"
-  );
-
-  gradient.addColorStop(
-    1,
-    "rgba(255,120,0,0)"
-  );
-
-
-  ctx.fillStyle =
-    gradient;
-
-
-  ctx.beginPath();
-
-
-  ctx.arc(
-
-    cx,
-
-    cy,
-
-    radius * 3,
-
-    0,
-
-    Math.PI * 2
-
-  );
-
-
-  ctx.fill();
-
-
-  ctx.beginPath();
-
-
-  ctx.arc(
-
-    cx,
-
-    cy,
-
-    radius,
-
-    0,
-
-    Math.PI * 2
-
-  );
-
-
-  ctx.fillStyle =
-    "#ffd34e";
-
-
-  ctx.shadowBlur =
-    35;
-
-
-  ctx.shadowColor =
-    "#ffae00";
-
-
-  ctx.fill();
-
-
-  ctx.shadowBlur =
-    0;
 }
 
 
-/* =========================
-   ANIMATION
-========================= */
+/* ==========================================
+   NEURAL ACTIVITY
+========================================== */
 
-function animate(
-  time
-) {
+function activateNeurons(type){
 
-  drawBackground();
+neurons.forEach(
 
+neuron => {
 
-  rotationY +=
-    0.0015;
+neuron.material.color.set(
 
+0xffd84a
 
-  rotationX +=
-    0.0005;
+);
 
+}
 
-  const projected =
-    neurons.map(
-      project
-    );
+);
 
 
-  drawConnections(
-    projected
-  );
+const selected =
+
+neurons.filter(
+
+neuron =>
+
+neuron.userData.type === type
+
+);
 
 
-  drawNeurons(
-    projected,
-    time
-  );
+selected.forEach(
+
+neuron => {
+
+neuron.material.color.set(
+
+0xffffff
+
+);
+
+});
 
 
-  drawPlasmaWaves(
-    time
-  );
+selected.forEach(
+
+(neuron,index) => {
+
+const signal =
+
+signals[
+
+index %
+
+signals.length
+
+];
 
 
-  drawCore(
-    time
-  );
+signal.visible = true;
 
+signal.userData.progress = 0;
 
-  requestAnimationFrame(
-    animate
-  );
+signal.userData.target = neuron;
+
+});
+
 }
 
 
-/* =========================
-   SPEECH SYNTHESIS
-========================= */
+/* ==========================================
+   SIGNAL ANIMATION
+========================================== */
 
-function speak(
-  text
-) {
+function animateSignals(){
 
-  if (
-    !("speechSynthesis"
-      in window)
-  ) {
+signals.forEach(
 
-    return;
+signal => {
 
-  }
+if(
 
+!signal.visible ||
 
-  speechSynthesis.cancel();
+!signal.userData.target
 
+)
 
-  const speech =
-    new SpeechSynthesisUtterance(
-      text
-    );
+return;
 
 
-  speech.rate =
-    0.9;
+signal.userData.progress +=
 
-  speech.pitch =
-    0.7;
-
-  speech.volume =
-    1;
+.025;
 
 
-  speech.onstart =
-    () => {
+signal.position.lerpVectors(
 
-      voiceStatus.textContent =
-        "SPEAKING";
+new THREE.Vector3(
 
-    };
+0,
+
+0,
+
+0
+
+),
+
+signal.userData.target.position,
+
+signal.userData.progress
+
+);
 
 
-  speech.onend =
-    () => {
+if(
 
-      voiceStatus.textContent =
-        "READY";
+signal.userData.progress >= 1
 
-    };
+){
 
+signal.userData.progress = 0;
 
-  speechSynthesis.speak(
-    speech
-  );
+}
+
+});
+
 }
 
 
-/* =========================
-   RESPONSE
-========================= */
+/* ==========================================
+   ULTRON VOICE
+========================================== */
 
-function respond(
-  text
-) {
+function speak(text){
 
-  responseElement.innerHTML =
+if(
 
-    `<span>ULTRON:</span>
-     ${text}`;
+!("speechSynthesis" in window)
 
-  speak(text);
+){
+
+return;
+
 }
 
 
-/* =========================
-   WEBSITE / APP LAUNCHER
-========================= */
+speechSynthesis.cancel();
 
-const sites = {
 
-  youtube:
-    "https://www.youtube.com/",
+const speech =
 
-  google:
-    "https://www.google.com/",
+new SpeechSynthesisUtterance(
 
-  whatsapp:
-    "https://web.whatsapp.com/",
+text
 
-  roblox:
-    "https://www.roblox.com/",
+);
 
-  instagram:
-    "https://www.instagram.com/",
 
-  chatgpt:
-    "https://chatgpt.com/"
+/*
+
+Deep futuristic AI voice
+
+*/
+
+speech.rate = .78;
+
+speech.pitch = .35;
+
+speech.volume = 1;
+
+
+const voices =
+
+speechSynthesis.getVoices();
+
+
+const voice =
+
+voices.find(
+
+v =>
+
+/David|Daniel|Alex|Google UK English Male|Microsoft David/i
+
+.test(
+
+v.name
+
+)
+
+);
+
+
+if(voice){
+
+speech.voice = voice;
+
+}
+
+
+speech.onstart =
+
+function(){
+
+status.innerText =
+
+"⚡ MARK 11 SPEAKING";
+
+
+core.material.color.set(
+
+0xffffff
+
+);
+
+
+glow.material.opacity =
+
+.8;
 
 };
 
 
-function openSite(
-  name
-) {
+speech.onend =
 
-  const url =
-    sites[name];
+function(){
 
+core.material.color.set(
 
-  if (!url) {
+0xffd000
 
-    respond(
-      "I could not find that application."
-    );
-
-    return;
-
-  }
-
-
-  respond(
-    `Opening ${name}, Boss.`
-  );
-
-
-  setTimeout(
-    () => {
-
-      window.location.href =
-        url;
-
-    },
-
-    700
-  );
-}
-
-
-/* =========================
-   COMMAND PROCESSOR
-========================= */
-
-function processCommand(
-  command
-) {
-
-  const text =
-    command
-      .toLowerCase()
-      .trim();
-
-
-  if (
-    text.includes(
-      "open youtube"
-    )
-  ) {
-
-    openSite(
-      "youtube"
-    );
-
-    return;
-
-  }
-
-
-  if (
-    text.includes(
-      "open google"
-    )
-  ) {
-
-    openSite(
-      "google"
-    );
-
-    return;
-
-  }
-
-
-  if (
-    text.includes(
-      "open whatsapp"
-    )
-  ) {
-
-    openSite(
-      "whatsapp"
-    );
-
-    return;
-
-  }
-
-
-  if (
-    text.includes(
-      "open roblox"
-    )
-  ) {
-
-    openSite(
-      "roblox"
-    );
-
-    return;
-
-  }
-
-
-  if (
-    text.includes(
-      "open instagram"
-    )
-  ) {
-
-    openSite(
-      "instagram"
-    );
-
-    return;
-
-  }
-
-
-  if (
-    text.includes(
-      "open chatgpt"
-    )
-  ) {
-
-    openSite(
-      "chatgpt"
-    );
-
-    return;
-
-  }
-
-
-  if (
-    text.includes(
-      "hello"
-    ) ||
-
-    text.includes(
-      "hi ultron"
-    )
-  ) {
-
-    respond(
-      "Greetings, Boss. Neural systems are fully operational."
-    );
-
-    return;
-
-  }
-
-
-  if (
-    text.includes(
-      "who are you"
-    )
-  ) {
-
-    respond(
-      "I am ULTRON MARK 12. Your advanced neural interface."
-    );
-
-    return;
-
-  }
-
-
-  if (
-    text.includes(
-      "status"
-    )
-  ) {
-
-    respond(
-      "All systems are operational. Neural core stable."
-    );
-
-    return;
-
-  }
-
-
-  respond(
-    "Command received, Boss. I am ready."
-  );
-}
-
-
-/* =========================
-   SEND BUTTON
-========================= */
-
-sendButton.addEventListener(
-  "click",
-  () => {
-
-    const command =
-      commandInput.value;
-
-
-    if (
-      command.trim()
-    ) {
-
-      processCommand(
-        command
-      );
-
-      commandInput.value =
-        "";
-
-    }
-
-  }
 );
 
 
-/* =========================
-   ENTER KEY
-========================= */
+glow.material.opacity =
 
-commandInput.addEventListener(
-  "keydown",
-  (event) => {
+.12;
 
-    if (
-      event.key ===
-      "Enter"
-    ) {
 
-      sendButton.click();
+status.innerText =
 
-    }
+"MARK 11 READY";
 
-  }
+};
+
+
+speechSynthesis.speak(
+
+speech
+
+);
+
+}
+
+
+/* ==========================================
+   ANSWER
+========================================== */
+
+function answer(
+
+text,
+
+type = 1
+
+){
+
+show(text);
+
+
+activateNeurons(type);
+
+
+/* Core glows */
+
+core.material.color.set(
+
+0xffffff
+
 );
 
 
-/* =========================
+glow.material.opacity =
+
+.8;
+
+
+speak(text);
+
+
+setTimeout(
+
+function(){
+
+core.material.color.set(
+
+0xffd000
+
+);
+
+
+glow.material.opacity =
+
+.12;
+
+
+signals.forEach(
+
+signal => {
+
+signal.visible = false;
+
+});
+
+
+},
+
+1800
+
+);
+
+}
+
+
+/* ==========================================
+   OPEN APPS / WEBSITES
+========================================== */
+
+function openApp(app){
+
+if(
+
+app === "youtube"
+
+){
+
+window.location.href =
+
+"https://m.youtube.com/";
+
+}
+
+
+else if(
+
+app === "google"
+
+){
+
+window.location.href =
+
+"https://www.google.com/";
+
+}
+
+
+else if(
+
+app === "whatsapp"
+
+){
+
+window.location.href =
+
+"https://www.whatsapp.com/";
+
+}
+
+
+else if(
+
+app === "roblox"
+
+){
+
+window.location.href =
+
+"https://www.roblox.com/";
+
+}
+
+
+else if(
+
+app === "instagram"
+
+){
+
+window.location.href =
+
+"https://www.instagram.com/";
+
+}
+
+
+else if(
+
+app === "facebook"
+
+){
+
+window.location.href =
+
+"https://www.facebook.com/";
+
+}
+
+
+else if(
+
+app === "chatgpt"
+
+){
+
+window.location.href =
+
+"https://chatgpt.com/";
+
+}
+
+
+else if(
+
+app === "github"
+
+){
+
+window.location.href =
+
+"https://github.com/";
+
+}
+
+
+else if(
+
+app === "gmail"
+
+){
+
+window.location.href =
+
+"https://mail.google.com/";
+
+}
+
+
+else if(
+
+app === "chrome"
+
+){
+
+window.location.href =
+
+"https://www.google.com/";
+
+}
+
+}
+
+
+/* ==========================================
+   COMMAND SYSTEM
+========================================== */
+
+function command(text){
+
+text =
+
+text
+
+.toLowerCase()
+
+.trim();
+
+
+/* YOUTUBE */
+
+if(
+
+text.includes(
+
+"open youtube"
+
+)
+
+){
+
+answer(
+
+"Opening YouTube, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"youtube"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* GOOGLE */
+
+if(
+
+text.includes(
+
+"open google"
+
+)
+
+){
+
+answer(
+
+"Opening Google, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"google"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* WHATSAPP */
+
+if(
+
+text.includes(
+
+"open whatsapp"
+
+)
+
+){
+
+answer(
+
+"Opening WhatsApp, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"whatsapp"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* ROBLOX */
+
+if(
+
+text.includes(
+
+"open roblox"
+
+)
+
+){
+
+answer(
+
+"Opening Roblox, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"roblox"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* INSTAGRAM */
+
+if(
+
+text.includes(
+
+"open instagram"
+
+)
+
+){
+
+answer(
+
+"Opening Instagram, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"instagram"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* FACEBOOK */
+
+if(
+
+text.includes(
+
+"open facebook"
+
+)
+
+){
+
+answer(
+
+"Opening Facebook, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"facebook"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* CHATGPT */
+
+if(
+
+text.includes(
+
+"open chatgpt"
+
+)
+
+){
+
+answer(
+
+"Opening ChatGPT, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"chatgpt"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* GITHUB */
+
+if(
+
+text.includes(
+
+"open github"
+
+)
+
+){
+
+answer(
+
+"Opening GitHub, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"github"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* GMAIL */
+
+if(
+
+text.includes(
+
+"open gmail"
+
+)
+
+){
+
+answer(
+
+"Opening Gmail, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"gmail"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* CHROME */
+
+if(
+
+text.includes(
+
+"open chrome"
+
+)
+
+){
+
+answer(
+
+"Opening Google Chrome, Boss.",
+
+3
+
+);
+
+
+setTimeout(
+
+function(){
+
+openApp(
+
+"chrome"
+
+);
+
+},
+
+800
+
+);
+
+
+return;
+
+}
+
+
+/* 1 + 1 */
+
+if(
+
+text.includes("1+1") ||
+
+text.includes("1 plus 1") ||
+
+text.includes("one plus one")
+
+){
+
+answer(
+
+"Two, Boss.",
+
+0
+
+);
+
+
+return;
+
+}
+
+
+/* ARE YOU DUMB */
+
+if(
+
+text.includes(
+
+"are you dumb"
+
+)
+
+){
+
+answer(
+
+"No, Boss. I am ULTRON MARK 11.",
+
+1
+
+);
+
+
+return;
+
+}
+
+
+/* PROTOTYPE */
+
+if(
+
+text.includes(
+
+"prototype"
+
+)
+
+){
+
+answer(
+
+"Yes, Boss. I am the ULTRON MARK 11 prototype.",
+
+2
+
+);
+
+
+return;
+
+}
+
+
+/* NAME */
+
+if(
+
+text.includes(
+
+"your name"
+
+)
+
+){
+
+answer(
+
+"My designation is ULTRON MARK 11.",
+
+2
+
+);
+
+
+return;
+
+}
+
+
+/* WHO */
+
+if(
+
+text.includes(
+
+"who are you"
+
+)
+
+){
+
+answer(
+
+"I am ULTRON MARK 11, your personal AI assistant.",
+
+2
+
+);
+
+
+return;
+
+}
+
+
+/* HELLO */
+
+if(
+
+text.includes(
+
+"hello"
+
+)
+
+){
+
+answer(
+
+"Hello, Boss. Neural systems are online.",
+
+1
+
+);
+
+
+return;
+
+}
+
+
+/* TIME */
+
+if(
+
+text.includes(
+
+"time"
+
+)
+
+){
+
+const now =
+
+new Date();
+
+
+answer(
+
+"The current time is " +
+
+now.toLocaleTimeString(),
+
+4
+
+);
+
+
+return;
+
+}
+
+
+/* UNKNOWN */
+
+answer(
+
+"I don't know that yet, Boss.",
+
+4
+
+);
+
+}
+
+
+/* ==========================================
    VOICE RECOGNITION
-========================= */
+========================================== */
 
-const SpeechRecognition =
+function listen(){
 
-  window.SpeechRecognition ||
+const Recognition =
 
-  window.webkitSpeechRecognition;
+window.SpeechRecognition ||
 
-
-if (
-  SpeechRecognition
-) {
-
-  const recognition =
-    new SpeechRecognition();
+window.webkitSpeechRecognition;
 
 
-  recognition.continuous =
-    false;
+if(!Recognition){
 
+show(
 
-  recognition.interimResults =
-    false;
+"Voice recognition is not supported."
 
+);
 
-  recognition.lang =
-    "en-US";
-
-
-  recognition.onstart =
-    () => {
-
-      voiceStatus.textContent =
-        "LISTENING";
-
-      micButton.textContent =
-        "🔴";
-
-    };
-
-
-  recognition.onend =
-    () => {
-
-      voiceStatus.textContent =
-        "READY";
-
-      micButton.textContent =
-        "🎤";
-
-    };
-
-
-  recognition.onresult =
-    (event) => {
-
-      const command =
-
-        event
-          .results[0][0]
-          .transcript;
-
-
-      commandInput.value =
-        command;
-
-
-      processCommand(
-        command
-      );
-
-    };
-
-
-  micButton.addEventListener(
-    "click",
-    () => {
-
-      recognition.start();
-
-    }
-  );
-
-} else {
-
-  micButton.disabled =
-    true;
-
-  voiceStatus.textContent =
-    "NOT SUPPORTED";
+return;
 
 }
 
 
-/* =========================
-   QUICK BUTTONS
-========================= */
+const recognition =
+
+new Recognition();
+
+
+recognition.lang =
+
+"en-US";
+
+
+recognition.continuous =
+
+false;
+
+
+recognition.interimResults =
+
+false;
+
+
+status.innerText =
+
+"🎤 LISTENING...";
+
+
+recognition.start();
+
+
+recognition.onresult =
+
+function(event){
+
+const text =
+
+event
+
+.results[0][0]
+
+.transcript;
+
+
+command(text);
+
+};
+
+
+recognition.onerror =
+
+function(){
+
+status.innerText =
+
+"MARK 11 READY";
+
+};
+
+}
+
+
+/* ==========================================
+   TYPING
+========================================== */
+
+function send(){
+
+const text =
+
+input.value.trim();
+
+
+if(!text)
+
+return;
+
+
+command(text);
+
+
+input.value = "";
+
+}
+
 
 document
-  .querySelectorAll(
-    ".quick-buttons button"
-  )
-  .forEach(
-    button => {
 
-      button.addEventListener(
-        "click",
-        () => {
+.getElementById(
 
-          openSite(
-            button.dataset.site
-          );
+"sendButton"
 
-        }
-      );
+)
 
-    }
-  );
+.onclick =
 
+send;
 
-/* =========================
-   TOUCH ROTATION
-========================= */
 
-canvas.addEventListener(
-  "pointerdown",
-  (event) => {
+input.addEventListener(
 
-    dragging = true;
+"keydown",
 
-    lastX =
-      event.clientX;
+function(e){
 
-    lastY =
-      event.clientY;
+if(
 
-  }
-);
+e.key ===
 
+"Enter"
 
-canvas.addEventListener(
-  "pointermove",
-  (event) => {
+){
 
-    if (
-      !dragging
-    ) {
+send();
 
-      return;
+}
 
-    }
+});
 
 
-    const dx =
-      event.clientX -
-      lastX;
+document
 
+.getElementById(
 
-    const dy =
-      event.clientY -
-      lastY;
+"typeButton"
 
+)
 
-    rotationY +=
-      dx * 0.008;
+.onclick =
 
+function(){
 
-    rotationX +=
-      dy * 0.008;
+typing.style.display =
 
+typing.style.display ===
 
-    lastX =
-      event.clientX;
+"block"
 
+?
 
-    lastY =
-      event.clientY;
+"none"
 
-  }
-);
+:
 
+"block";
 
-canvas.addEventListener(
-  "pointerup",
-  () => {
+};
 
-    dragging = false;
 
-  }
-);
+/* ==========================================
+   HAND TRACKING
+========================================== */
 
+const hands =
 
-canvas.addEventListener(
-  "pointercancel",
-  () => {
+new Hands({
 
-    dragging = false;
+locateFile:
 
-  }
-);
+file =>
 
+"https://cdn.jsdelivr.net/npm/@mediapipe/hands/"
 
-/* =========================
-   DOUBLE TAP
-========================= */
++ file
 
-canvas.addEventListener(
-  "pointerup",
-  () => {
+});
 
-    const now =
-      Date.now();
 
+hands.setOptions({
 
-    if (
-      now - lastTap <
-      300
-    ) {
+maxNumHands:1,
 
-      rotationX = 0;
+modelComplexity:1,
 
-      rotationY = 0;
+minDetectionConfidence:.7,
 
-      zoom = 1;
+minTrackingConfidence:.7
 
-    }
+});
 
 
-    lastTap =
-      now;
+hands.onResults(
 
-  }
-);
+function(results){
 
+if(!handOn)
 
-/* =========================
-   PINCH ZOOM
-========================= */
+return;
 
-let initialDistance =
-  null;
 
+if(
 
-canvas.addEventListener(
-  "touchstart",
-  (event) => {
+results.multiHandLandmarks &&
 
-    if (
-      event.touches.length ===
-      2
-    ) {
+results.multiHandLandmarks.length
 
-      initialDistance =
-        getDistance(
-          event.touches[0],
-          event.touches[1]
-        );
+){
 
-    }
+const hand =
 
-  }
-);
+results.multiHandLandmarks[0];
 
 
-canvas.addEventListener(
-  "touchmove",
-  (event) => {
+const index =
 
-    if (
-      event.touches.length ===
-      2
-    ) {
+hand[8];
 
-      const distance =
-        getDistance(
-          event.touches[0],
-          event.touches[1]
-        );
 
+const thumb =
 
-      if (
-        initialDistance
-      ) {
+hand[4];
 
-        const difference =
 
-          distance -
-          initialDistance;
+/* ROTATION */
 
+if(lastX !== null){
 
-        zoom +=
-          difference *
-          0.002;
+brain.rotation.y +=
 
+(index.x-lastX)*2;
 
-        zoom =
-          Math.max(
-            .5,
-            Math.min(
-              2.5,
-              zoom
-            )
-          );
 
-      }
+brain.rotation.x +=
 
-
-      initialDistance =
-        distance;
-
-    }
-
-  }
-);
-
-
-canvas.addEventListener(
-  "touchend",
-  () => {
-
-    initialDistance =
-      null;
-
-  }
-);
-
-
-function getDistance(
-  a,
-  b
-) {
-
-  return Math.sqrt(
-
-    Math.pow(
-      a.clientX -
-      b.clientX,
-      2
-    )
-
-    +
-
-    Math.pow(
-      a.clientY -
-      b.clientY,
-      2
-    )
-
-  );
+(index.y-lastY)*2;
 
 }
 
 
-/* =========================
-   START ULTRON
-========================= */
+lastX =
 
-resize();
+index.x;
+
+
+lastY =
+
+index.y;
+
+
+/* PINCH */
+
+const dx =
+
+thumb.x-index.x;
+
+
+const dy =
+
+thumb.y-index.y;
+
+
+const distance =
+
+Math.sqrt(
+
+dx*dx+dy*dy
+
+);
+
+
+if(lastPinch !== null){
+
+zoom +=
+
+(distance-lastPinch)*3;
+
+
+zoom =
+
+Math.max(
+
+.5,
+
+Math.min(
+
+4,
+
+zoom
+
+)
+
+);
+
+
+brain.scale.set(
+
+zoom,
+
+zoom,
+
+zoom
+
+);
+
+}
+
+
+lastPinch =
+
+distance;
+
+
+status.innerText =
+
+"✋ HAND TRACKING ACTIVE";
+
+}
+
+});
+
+
+/* ==========================================
+   CAMERA
+========================================== */
+
+async function toggleHand(){
+
+if(handOn){
+
+handOn = false;
+
+
+if(stream){
+
+stream
+
+.getTracks()
+
+.forEach(
+
+track =>
+
+track.stop()
+
+);
+
+}
+
+
+video.style.display =
+
+"none";
+
+
+document
+
+.getElementById(
+
+"handButton"
+
+)
+
+.innerText =
+
+"✋ HAND OFF";
+
+
+return;
+
+}
+
+
+try{
+
+stream =
+
+await navigator
+
+.mediaDevices
+
+.getUserMedia({
+
+video:true,
+
+audio:false
+
+});
+
+
+video.srcObject =
+
+stream;
+
+
+video.style.display =
+
+"block";
+
+
+handOn = true;
+
+
+document
+
+.getElementById(
+
+"handButton"
+
+)
+
+.innerText =
+
+"✋ HAND ON";
+
+
+processHands();
+
+}
+
+catch(error){
+
+show(
+
+"Camera permission is required, Boss."
+
+);
+
+}
+
+}
+
+
+async function processHands(){
+
+if(!handOn)
+
+return;
+
+
+try{
+
+await hands.send({
+
+image:video
+
+});
+
+}
+
+catch(error){
+
+/* No red error */
+
+}
+
 
 requestAnimationFrame(
-  animate
+
+processHands
+
 );
+
+}
+
+
+/* ==========================================
+   TOUCH CONTROL
+========================================== */
+
+document
+
+.getElementById(
+
+"touchButton"
+
+)
+
+.onclick =
+
+function(){
+
+touchOn =
+
+!touchOn;
+
+
+document
+
+.getElementById(
+
+"touchButton"
+
+)
+
+.innerText =
+
+touchOn
+
+?
+
+"👆 TOUCH ON"
+
+:
+
+"👆 TOUCH OFF";
+
+};
+
+
+/* ==========================================
+   TOUCH ROTATION
+========================================== */
+
+renderer
+
+.domElement
+
+.addEventListener(
+
+"touchstart",
+
+function(event){
+
+const now =
+
+Date.now();
+
+
+/* DOUBLE TAP */
+
+if(
+
+now-lastTap < 300
+
+){
+
+answer(
+
+"Core selected, Boss.",
+
+2
+
+);
+
+}
+
+
+lastTap =
+
+now;
+
+
+if(touchOn){
+
+touchX =
+
+event
+
+.touches[0]
+
+.clientX;
+
+
+touchY =
+
+event
+
+.touches[0]
+
+.clientY;
+
+}
+
+});
+
+
+renderer
+
+.domElement
+
+.addEventListener(
+
+"touchmove",
+
+function(event){
+
+if(!touchOn)
+
+return;
+
+
+event.preventDefault();
+
+
+const x =
+
+event
+
+.touches[0]
+
+.clientX;
+
+
+const y =
+
+event
+
+.touches[0]
+
+.clientY;
+
+
+brain.rotation.y +=
+
+(x-touchX)*.01;
+
+
+brain.rotation.x +=
+
+(y-touchY)*.01;
+
+
+touchX = x;
+
+touchY = y;
+
+},
+
+{
+
+passive:false
+
+}
+
+);
+
+
+/* ==========================================
+   RESET
+========================================== */
+
+document
+
+.getElementById(
+
+"resetButton"
+
+)
+
+.onclick =
+
+function(){
+
+brain.rotation.set(
+
+0,
+
+0,
+
+0
+
+);
+
+
+brain.scale.set(
+
+1,
+
+1,
+
+1
+
+);
+
+
+zoom = 1;
+
+
+core.material.color.set(
+
+0xffd000
+
+);
+
+
+glow.material.opacity =
+
+.12;
+
+
+status.innerText =
+
+"MARK 11 READY";
+
+
+show(
+
+"NEURAL CORE ONLINE"
+
+);
+
+};
+
+
+/* ==========================================
+   BUTTONS
+========================================== */
+
+document
+
+.getElementById(
+
+"handButton"
+
+)
+
+.onclick =
+
+toggleHand;
+
+
+document
+
+.getElementById(
+
+"voiceButton"
+
+)
+
+.onclick =
+
+listen;
+
+
+/* ==========================================
+   ANIMATION
+========================================== */
+
+function animate(){
+
+requestAnimationFrame(
+
+animate
+
+);
+
+
+core.rotation.x +=
+
+.008;
+
+
+core.rotation.y +=
+
+.012;
+
+
+animateSignals();
+
+
+neurons.forEach(
+
+neuron => {
+
+if(
+
+Math.random() < .01
+
+){
+
+neuron.material.color.set(
+
+0xffffff
+
+);
+
+
+setTimeout(
+
+function(){
+
+neuron.material.color.set(
+
+0xffd84a
+
+);
+
+},
+
+150
+
+);
+
+}
+
+});
+
+
+renderer.render(
+
+scene,
+
+camera
+
+);
+
+}
+
+
+animate();
+
+
+/* ==========================================
+   RESIZE
+========================================== */
+
+window
+
+.addEventListener(
+
+"resize",
+
+function(){
+
+camera.aspect =
+
+innerWidth /
+
+innerHeight;
+
+
+camera.updateProjectionMatrix();
+
+
+renderer.setSize(
+
+innerWidth,
+
+innerHeight
+
+);
+
+});
