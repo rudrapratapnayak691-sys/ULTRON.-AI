@@ -1,79 +1,71 @@
-/* =====================================================
-   ULTRON MARK 9
-===================================================== */
+/* ==========================================
+   ULTRON MARK 10
+   BROWSER AI VOICE + NEURAL CORE
+========================================== */
 
 
-/* =========================
+/* ==========================================
    VARIABLES
-========================= */
+========================================== */
 
-let handTrackingActive = false;
+let handOn = false;
 
-let touchMode = false;
+let touchOn = false;
 
-let cameraStream = null;
+let stream = null;
 
-let lastHandX = null;
+let lastX = null;
 
-let lastHandY = null;
+let lastY = null;
 
-let currentZoom = 1;
+let zoom = 1;
 
-let previousPinch = null;
-
-let processing = false;
-
-let touchX = 0;
-
-let touchY = 0;
+let lastPinch = null;
 
 let lastTap = 0;
 
-let signalIndex = 0;
+let processing = false;
 
 
-/* =========================
+/* ==========================================
    UI
-========================= */
+========================================== */
 
-const responseBox =
+const response =
 document.getElementById("response");
 
-const statusBox =
+const status =
 document.getElementById("status");
 
-const inputBox =
-document.getElementById("questionInput");
-
-const typingPanel =
-document.getElementById("typingPanel");
-
-const cameraVideo =
+const video =
 document.getElementById("camera");
 
+const input =
+document.getElementById("questionInput");
 
-/* =====================================================
-   THREE.JS
-===================================================== */
+const typing =
+document.getElementById("typingPanel");
+
+
+/* ==========================================
+   THREE JS
+========================================== */
 
 const scene =
 new THREE.Scene();
-
 
 const camera =
 new THREE.PerspectiveCamera(
 
 60,
 
-window.innerWidth /
-window.innerHeight,
+innerWidth / innerHeight,
 
-0.1,
+.1,
 
 1000
 
 );
-
 
 camera.position.z = 8;
 
@@ -88,24 +80,18 @@ alpha:true
 });
 
 
-renderer.setPixelRatio(
+renderer.setSize(
 
-Math.min(
+innerWidth,
 
-window.devicePixelRatio,
-
-2
-
-)
+innerHeight
 
 );
 
 
-renderer.setSize(
+renderer.setPixelRatio(
 
-window.innerWidth,
-
-window.innerHeight
+Math.min(devicePixelRatio,2)
 
 );
 
@@ -117,47 +103,36 @@ renderer.domElement
 );
 
 
-/* =====================================================
-   NEURAL SYSTEM
-===================================================== */
+/* ==========================================
+   NEURAL BRAIN
+========================================== */
 
 const brain =
 new THREE.Group();
 
-
 scene.add(brain);
 
 
-/* =========================
+/* ==========================================
    CORE
-========================= */
+========================================== */
 
-const coreGeometry =
+const core =
+new THREE.Mesh(
+
 new THREE.IcosahedronGeometry(
 
-1,
+1,3
 
-3
+),
 
-);
-
-
-const coreMaterial =
 new THREE.MeshBasicMaterial({
 
 color:0xffd000,
 
 wireframe:true
 
-});
-
-
-const core =
-new THREE.Mesh(
-
-coreGeometry,
-
-coreMaterial
+})
 
 );
 
@@ -165,11 +140,13 @@ coreMaterial
 brain.add(core);
 
 
-/* =========================
+/* ==========================================
    CORE GLOW
-========================= */
+========================================== */
 
-const glowGeometry =
+const glow =
+new THREE.Mesh(
+
 new THREE.SphereGeometry(
 
 1.3,
@@ -178,216 +155,69 @@ new THREE.SphereGeometry(
 
 32
 
-);
+),
 
-
-const glowMaterial =
 new THREE.MeshBasicMaterial({
 
 color:0xff9900,
 
 transparent:true,
 
-opacity:0.12
+opacity:.12
 
-});
-
-
-const coreGlow =
-new THREE.Mesh(
-
-glowGeometry,
-
-glowMaterial
+})
 
 );
 
 
-brain.add(coreGlow);
+brain.add(glow);
 
 
-/* =========================
-   RINGS
-========================= */
-
-const rings = [];
-
-
-for(
-
-let i = 0;
-
-i < 8;
-
-i++
-
-){
-
-const geometry =
-
-new THREE.TorusGeometry(
-
-1.5 +
-
-i * 0.35,
-
-0.012,
-
-8,
-
-120
-
-);
-
-
-const material =
-
-new THREE.MeshBasicMaterial({
-
-color:0xffaa00,
-
-transparent:true,
-
-opacity:0.5
-
-});
-
-
-const ring =
-
-new THREE.Mesh(
-
-geometry,
-
-material
-
-);
-
-
-ring.rotation.x =
-
-Math.random() *
-
-Math.PI;
-
-
-ring.rotation.y =
-
-Math.random() *
-
-Math.PI;
-
-
-brain.add(ring);
-
-
-rings.push(ring);
-
-}
-
-
-/* =========================
+/* ==========================================
    NEURONS
-========================= */
+========================================== */
 
 const neurons = [];
 
 
-const neuronGeometry =
+for(let i=0;i<300;i++){
+
+const angle =
+Math.random()*Math.PI*2;
+
+const radius =
+1.5+Math.random()*2.5;
+
+
+const neuron =
+new THREE.Mesh(
 
 new THREE.SphereGeometry(
 
-0.045,
+.045,
 
 8,
 
 8
 
-);
-
-
-for(
-
-let i = 0;
-
-i < 300;
-
-i++
-
-){
-
-const angle =
-
-Math.random() *
-
-Math.PI *
-
-2;
-
-
-const radius =
-
-1.5 +
-
-Math.random() *
-
-2.5;
-
-
-const x =
-
-Math.cos(angle) *
-
-radius;
-
-
-const y =
-
-(
-
-Math.random() -
-
-0.5
-
-) *
-
-2.5;
-
-
-const z =
-
-Math.sin(angle) *
-
-radius;
-
-
-const material =
+),
 
 new THREE.MeshBasicMaterial({
 
 color:0xffd84a
 
-});
-
-
-const neuron =
-
-new THREE.Mesh(
-
-neuronGeometry,
-
-material
+})
 
 );
 
 
 neuron.position.set(
 
-x,
+Math.cos(angle)*radius,
 
-y,
+(Math.random()-.5)*2.5,
 
-z
+Math.sin(angle)*radius
 
 );
 
@@ -396,945 +226,608 @@ neuron.userData.type =
 
 Math.floor(
 
-Math.random() *
-
-5
+Math.random()*5
 
 );
 
 
 brain.add(neuron);
 
-
 neurons.push(neuron);
 
 }
 
 
-/* =====================================================
+/* ==========================================
    SIGNALS
-===================================================== */
+========================================== */
 
-const signals = [];
+const signals=[];
 
 
-for(
+for(let i=0;i<40;i++){
 
-let i = 0;
+const signal=
 
-i < 50;
-
-i++
-
-){
-
-const geometry =
+new THREE.Mesh(
 
 new THREE.SphereGeometry(
 
-0.035,
+.035,
 
 8,
 
 8
 
-);
-
-
-const material =
+),
 
 new THREE.MeshBasicMaterial({
 
 color:0xffffff
 
-});
-
-
-const signal =
-
-new THREE.Mesh(
-
-geometry,
-
-material
+})
 
 );
 
 
-signal.visible = false;
+signal.visible=false;
 
+signal.userData.progress=0;
 
-signal.userData.progress = 0;
-
-signal.userData.target = null;
+signal.userData.target=null;
 
 
 brain.add(signal);
-
 
 signals.push(signal);
 
 }
 
 
-/* =====================================================
-   RESPONSE
-===================================================== */
+/* ==========================================
+   SCREEN
+========================================== */
 
-function showResponse(text){
+function show(text){
 
-responseBox.innerText =
+response.innerText=
 
-text;
+"ULTRON MARK 10: "+text;
 
 }
 
 
-/* =====================================================
-   ERROR SYSTEM
-===================================================== */
+/* ==========================================
+   ERROR
+========================================== */
 
-function triggerError(){
+function error(){
 
-/* Make core red */
-
-coreMaterial.color.set(
+core.material.color.set(
 
 0xff0000
 
 );
 
-
-coreGlow.material.color.set(
+glow.material.color.set(
 
 0xff0000
 
 );
 
+glow.material.opacity=.8;
 
-coreGlow.material.opacity =
+document.body.classList.add("error");
 
-0.8;
+status.innerText=
 
-
-document.body.classList.add(
-
-"errorMode"
-
-);
+"⚠️ NEURAL SYSTEM ERROR";
 
 
-setStatus(
+setTimeout(()=>{
 
-"⚠️ ULTRON MARK 9 ERROR"
-
-);
-
-
-/* Red error for 1.5 seconds */
-
-setTimeout(
-
-function(){
-
-coreMaterial.color.set(
+core.material.color.set(
 
 0xffd000
 
 );
 
-
-coreGlow.material.color.set(
+glow.material.color.set(
 
 0xff9900
 
 );
 
+glow.material.opacity=.12;
 
-coreGlow.material.opacity =
+document.body.classList.remove("error");
 
-0.12;
+status.innerText=
 
+"MARK 10 READY";
 
-document.body.classList.remove(
-
-"errorMode"
-
-);
-
-
-setStatus(
-
-"ULTRON MARK 9 READY"
-
-);
-
-},
-
-1500
-
-);
+},1500);
 
 }
 
 
-/* =====================================================
-   ACTIVATE NEURONS
-===================================================== */
-
-function activateNeurons(type){
-
-neurons.forEach(
-
-neuron => {
-
-neuron.material.color.set(
-
-0xffd84a
-
-);
-
-}
-
-);
-
-
-const selected =
-
-neurons.filter(
-
-neuron =>
-
-neuron.userData.type === type
-
-);
-
-
-selected.forEach(
-
-neuron => {
-
-neuron.material.color.set(
-
-0xffffff
-
-);
-
-}
-
-);
-
-
-/* Create signals */
-
-selected.forEach(
-
-(neuron,index) => {
-
-const signal =
-
-signals[
-
-(index +
-
-signalIndex)
-
-%
-
-signals.length
-
-];
-
-
-signal.visible = true;
-
-signal.userData.progress = 0;
-
-signal.userData.target =
-
-neuron;
-
-}
-
-);
-
-
-signalIndex +=
-
-selected.length;
-
-}
-
-
-/* =====================================================
-   SIGNAL ANIMATION
-===================================================== */
-
-function animateSignals(){
-
-signals.forEach(
-
-signal => {
-
-if(!signal.visible)
-
-return;
-
-
-signal.userData.progress +=
-
-0.02;
-
-
-if(!signal.userData.target)
-
-return;
-
-
-const start =
-
-new THREE.Vector3(
-
-0,
-
-0,
-
-0
-
-);
-
-
-signal.position.lerpVectors(
-
-start,
-
-signal.userData.target.position,
-
-signal.userData.progress
-
-);
-
-
-if(
-
-signal.userData.progress >= 1
-
-){
-
-signal.userData.progress = 0;
-
-}
-
-}
-
-);
-
-}
-
-
-/* =====================================================
-   PROCESSING
-===================================================== */
-
-function startProcessing(type){
-
-processing = true;
-
-
-activateNeurons(type);
-
-
-coreMaterial.color.set(
-
-0xffffff
-
-);
-
-
-coreGlow.material.opacity =
-
-0.7;
-
-}
-
-
-function stopProcessing(){
-
-processing = false;
-
-
-coreMaterial.color.set(
-
-0xffd000
-
-);
-
-
-coreGlow.material.opacity =
-
-0.12;
-
-
-signals.forEach(
-
-signal => {
-
-signal.visible = false;
-
-});
-
-
-setStatus(
-
-"ULTRON MARK 9 READY"
-
-);
-
-}
-
-
-/* =====================================================
-   JARVIS VOICE
-===================================================== */
+/* ==========================================
+   JARVIS STYLE BROWSER VOICE
+========================================== */
 
 function speak(text){
 
-const audio =
+if(
 
-new Audio(
+!("speechSynthesis" in window)
 
-"Jarvisvoice.mp3"
+){
 
-);
+error();
 
-
-/*
-
-Your MP3 will play.
-
-If your MP3 is only a short
-voice clip, it will NOT automatically
-speak different sentences.
-
-*/
-
-audio.play().catch(
-
-function(){
-
-triggerError();
-
-}
-
-);
+return;
 
 }
 
 
-/* =====================================================
-   ULTRON RESPONSE
-===================================================== */
+speechSynthesis.cancel();
 
-function respond(text){
 
-showResponse(
+const speech=
 
-"ULTRON MARK 9: " +
+new SpeechSynthesisUtterance(
 
 text
 
 );
 
 
-coreMaterial.color.set(
+/*
+
+Deep robotic AI settings
+
+*/
+
+speech.rate=.78;
+
+speech.pitch=.35;
+
+speech.volume=1;
+
+
+/*
+
+Find deepest available
+voice on device
+
+*/
+
+const voices=
+
+speechSynthesis.getVoices();
+
+
+const preferred=
+
+voices.find(v=>
+
+/David|Daniel|Alex|Google UK English Male|Microsoft David/i
+
+.test(v.name)
+
+);
+
+
+if(preferred){
+
+speech.voice=
+
+preferred;
+
+}
+
+
+speech.onstart=()=>{
+
+status.innerText=
+
+"⚡ MARK 10 SPEAKING";
+
+core.material.color.set(
 
 0xffffff
 
 );
 
+glow.material.opacity=.8;
 
-coreGlow.material.opacity =
+};
 
-0.9;
+
+speech.onend=()=>{
+
+core.material.color.set(
+
+0xffd000
+
+);
+
+glow.material.opacity=.12;
+
+status.innerText=
+
+"MARK 10 READY";
+
+};
+
+
+speech.onerror=()=>{
+
+error();
+
+};
+
+
+speechSynthesis.speak(
+
+speech
+
+);
+
+}
+
+
+/* ==========================================
+   RESPONSE
+========================================== */
+
+function answer(text,type=1){
+
+processing=true;
+
+
+show(text);
+
+
+neurons.forEach(n=>{
+
+n.material.color.set(
+
+0xffd84a
+
+);
+
+});
+
+
+const selected=
+
+neurons.filter(n=>
+
+n.userData.type===type
+
+);
+
+
+selected.forEach(n=>{
+
+n.material.color.set(
+
+0xffffff
+
+);
+
+});
+
+
+core.material.color.set(
+
+0xffffff
+
+);
+
+glow.material.opacity=.8;
 
 
 speak(text);
 
 
-setTimeout(
+setTimeout(()=>{
 
-function(){
+processing=false;
 
-stopProcessing();
-
-},
-
-1500
-
-);
+},1500);
 
 }
 
 
-/* =====================================================
-   APP URL SYSTEM
-===================================================== */
+/* ==========================================
+   APP OPENING
+========================================== */
 
 function openApp(app){
 
 try{
 
-if(app === "youtube"){
+if(app==="youtube"){
 
-window.location.href =
+location.href=
 
 "https://m.youtube.com/";
 
 }
 
+else if(app==="instagram"){
 
-else if(app === "instagram"){
-
-window.location.href =
+location.href=
 
 "https://www.instagram.com/";
 
 }
 
+else if(app==="whatsapp"){
 
-else if(app === "whatsapp"){
-
-window.location.href =
+location.href=
 
 "https://www.whatsapp.com/";
 
 }
 
+else if(app==="google"){
 
-else if(app === "google"){
-
-window.location.href =
+location.href=
 
 "https://www.google.com/";
 
 }
 
+else if(app==="roblox"){
 
-else if(app === "roblox"){
-
-window.location.href =
+location.href=
 
 "https://www.roblox.com/";
 
 }
 
-
 else{
 
-throw new Error(
+throw new Error();
 
-"Unknown application"
+}
+
+}
+
+catch(e){
+
+error();
+
+}
+
+}
+
+
+/* ==========================================
+   COMMANDS
+========================================== */
+
+function command(text){
+
+text=
+
+text.toLowerCase().trim();
+
+
+/* APP COMMANDS */
+
+if(text.includes("open youtube")){
+
+answer(
+
+"Opening YouTube, Boss.",
+
+3
 
 );
-
-}
-
-}
-
-catch(error){
-
-triggerError();
-
-}
-
-}
-
-
-/* =====================================================
-   COMMAND SYSTEM
-===================================================== */
-
-function processCommand(command){
-
-command =
-
-command
-
-.toLowerCase()
-
-.trim();
-
-
-/* YOUTUBE */
-
-if(
-
-command.includes(
-
-"open youtube"
-
-)
-
-){
-
-startProcessing(3);
-
-
-respond(
-
-"Opening YouTube, Boss."
-
-);
-
 
 setTimeout(
 
-function(){
-
-openApp(
-
-"youtube"
-
-);
-
-},
-
-800
-
-);
-
-
-return;
-
-}
-
-
-/* INSTAGRAM */
-
-if(
-
-command.includes(
-
-"open instagram"
-
-)
-
-){
-
-startProcessing(3);
-
-
-respond(
-
-"Opening Instagram, Boss."
-
-);
-
-
-setTimeout(
-
-function(){
-
-openApp(
-
-"instagram"
-
-);
-
-},
-
-800
-
-);
-
-
-return;
-
-}
-
-
-/* WHATSAPP */
-
-if(
-
-command.includes(
-
-"open whatsapp"
-
-)
-
-){
-
-startProcessing(3);
-
-
-respond(
-
-"Opening WhatsApp, Boss."
-
-);
-
-
-setTimeout(
-
-function(){
-
-openApp(
-
-"whatsapp"
-
-);
-
-},
-
-800
-
-);
-
-
-return;
-
-}
-
-
-/* GOOGLE */
-
-if(
-
-command.includes(
-
-"open google"
-
-)
-
-){
-
-startProcessing(3);
-
-
-respond(
-
-"Opening Google, Boss."
-
-);
-
-
-setTimeout(
-
-function(){
-
-openApp(
-
-"google"
-
-);
-
-},
-
-800
-
-);
-
-
-return;
-
-}
-
-
-/* ROBLOX */
-
-if(
-
-command.includes(
-
-"open roblox"
-
-)
-
-){
-
-startProcessing(3);
-
-
-respond(
-
-"Opening Roblox, Boss."
-
-);
-
-
-setTimeout(
-
-function(){
-
-openApp(
-
-"roblox"
-
-);
-
-},
-
-800
-
-);
-
-
-return;
-
-}
-
-
-/* 1 + 1 */
-
-if(
-
-command.includes("1+1") ||
-
-command.includes(
-
-"1 plus 1"
-
-) ||
-
-command.includes(
-
-"one plus one"
-
-)
-
-){
-
-startProcessing(0);
-
-
-setTimeout(
-
-function(){
-
-respond(
-
-"Two, Boss."
-
-);
-
-},
+()=>openApp("youtube"),
 
 700
 
 );
 
+return;
+
+}
+
+
+if(text.includes("open instagram")){
+
+answer(
+
+"Opening Instagram, Boss.",
+
+3
+
+);
+
+setTimeout(
+
+()=>openApp("instagram"),
+
+700
+
+);
 
 return;
 
 }
 
 
-/* DUMB */
+if(text.includes("open whatsapp")){
 
-if(
+answer(
 
-command.includes(
+"Opening WhatsApp, Boss.",
 
-"are you dumb"
-
-)
-
-){
-
-startProcessing(1);
-
-
-setTimeout(
-
-function(){
-
-respond(
-
-"No, Boss. I am ULTRON MARK 9."
+3
 
 );
 
-},
+setTimeout(
+
+()=>openApp("whatsapp"),
 
 700
 
 );
-
 
 return;
 
 }
 
 
-/* PROTOTYPE */
+if(text.includes("open google")){
 
-if(
+answer(
 
-command.includes(
+"Opening Google, Boss.",
 
-"prototype"
-
-)
-
-){
-
-startProcessing(2);
-
-
-setTimeout(
-
-function(){
-
-respond(
-
-"Yes, Boss. I am the ULTRON MARK 9 prototype."
+3
 
 );
 
-},
+setTimeout(
+
+()=>openApp("google"),
 
 700
 
 );
-
 
 return;
 
 }
 
 
-/* NAME */
+if(text.includes("open roblox")){
 
-if(
+answer(
 
-command.includes(
+"Opening Roblox, Boss.",
 
-"your name"
-
-)
-
-){
-
-startProcessing(2);
-
-
-setTimeout(
-
-function(){
-
-respond(
-
-"My designation is ULTRON MARK 9."
+3
 
 );
 
-},
+setTimeout(
+
+()=>openApp("roblox"),
 
 700
 
 );
 
+return;
+
+}
+
+
+/* SIMPLE QUESTIONS */
+
+if(
+
+text.includes("1+1") ||
+
+text.includes("1 plus 1") ||
+
+text.includes("one plus one")
+
+){
+
+answer(
+
+"Two, Boss.",
+
+0
+
+);
+
+return;
+
+}
+
+
+if(text.includes("are you dumb")){
+
+answer(
+
+"No, Boss. I am ULTRON MARK 10.",
+
+1
+
+);
+
+return;
+
+}
+
+
+if(text.includes("prototype")){
+
+answer(
+
+"Yes, Boss. I am the ULTRON MARK 10 prototype.",
+
+2
+
+);
+
+return;
+
+}
+
+
+if(text.includes("your name")){
+
+answer(
+
+"My designation is ULTRON MARK 10.",
+
+2
+
+);
+
+return;
+
+}
+
+
+if(text.includes("who are you")){
+
+answer(
+
+"I am ULTRON MARK 10, your personal AI assistant.",
+
+2
+
+);
+
+return;
+
+}
+
+
+if(text.includes("hello")){
+
+answer(
+
+"Hello, Boss. Neural systems are online.",
+
+1
+
+);
 
 return;
 
@@ -1343,35 +836,24 @@ return;
 
 /* UNKNOWN */
 
-startProcessing(4);
+answer(
 
+"I don't know that yet, Boss.",
 
-setTimeout(
-
-function(){
-
-respond(
-
-"I don't know that yet, Boss."
-
-);
-
-},
-
-700
+4
 
 );
 
 }
 
 
-/* =====================================================
+/* ==========================================
    VOICE INPUT
-===================================================== */
+========================================== */
 
-function startVoice(){
+function listen(){
 
-const Recognition =
+const Recognition=
 
 window.SpeechRecognition ||
 
@@ -1380,187 +862,136 @@ window.webkitSpeechRecognition;
 
 if(!Recognition){
 
-triggerError();
-
-showResponse(
-
-"Voice recognition is not supported."
-
-);
+error();
 
 return;
 
 }
 
 
-const recognition =
+const recognition=
 
 new Recognition();
 
 
-recognition.lang =
+recognition.lang="en-US";
 
-"en-US";
+recognition.continuous=false;
 
-
-recognition.continuous =
-
-false;
+recognition.interimResults=false;
 
 
-recognition.interimResults =
+status.innerText=
 
-false;
-
-
-setStatus(
-
-"🎤 LISTENING..."
-
-);
+"🎤 LISTENING...";
 
 
 recognition.start();
 
 
-recognition.onresult =
+recognition.onresult=
 
-function(event){
+event=>{
 
-const command =
+const text=
 
-event
-
-.results[0][0]
+event.results[0][0]
 
 .transcript;
 
 
-showResponse(
-
-"You: " +
-
-command
-
-);
-
-
-processCommand(
-
-command
-
-);
+command(text);
 
 };
 
 
-recognition.onerror =
+recognition.onerror=
 
-function(){
+()=>{
 
-triggerError();
+error();
 
 };
 
 }
 
 
-/* =====================================================
+/* ==========================================
    TYPING
-===================================================== */
+========================================== */
 
-function toggleTyping(){
+function send(){
 
-typingPanel.style.display =
+const text=
 
-typingPanel.style.display ===
-
-"block"
-
-?
-
-"none"
-
-:
-
-"block";
-
-}
+input.value.trim();
 
 
-function sendTyped(){
-
-const text =
-
-inputBox.value.trim();
+if(!text)return;
 
 
-if(!text)
-
-return;
+command(text);
 
 
-processCommand(text);
-
-
-inputBox.value = "";
+input.value="";
 
 }
 
 
-document
-
-.getElementById(
+document.getElementById(
 
 "sendButton"
 
-)
-
-.onclick =
-
-sendTyped;
+).onclick=send;
 
 
-inputBox
-
-.addEventListener(
+input.addEventListener(
 
 "keydown",
 
-function(event){
+e=>{
 
-if(
+if(e.key==="Enter")
 
-event.key ===
+send();
 
-"Enter"
-
-){
-
-sendTyped();
-
-}
-
-}
-
-);
+});
 
 
-/* =====================================================
+/* ==========================================
+   TYPING BUTTON
+========================================== */
+
+document.getElementById(
+
+"typeButton"
+
+).onclick=()=>{
+
+typing.style.display=
+
+typing.style.display==="block"
+
+?"none"
+
+:"block";
+
+};
+
+
+/* ==========================================
    HAND TRACKING
-===================================================== */
+========================================== */
 
-const hands =
+const hands=
 
 new Hands({
 
-locateFile:
+locateFile:file=>
 
-file =>
+"https://cdn.jsdelivr.net/npm/@mediapipe/hands/"
 
-"https://cdn.jsdelivr.net/npm/@mediapipe/hands/" +
-
-file
++file
 
 });
 
@@ -1571,20 +1002,18 @@ maxNumHands:1,
 
 modelComplexity:1,
 
-minDetectionConfidence:0.7,
+minDetectionConfidence:.7,
 
-minTrackingConfidence:0.7
+minTrackingConfidence:.7
 
 });
 
 
 hands.onResults(
 
-function(results){
+results=>{
 
-if(!handTrackingActive)
-
-return;
+if(!handOn)return;
 
 
 if(
@@ -1595,191 +1024,123 @@ results.multiHandLandmarks.length
 
 ){
 
-const hand =
+const hand=
 
 results.multiHandLandmarks[0];
 
 
-const index = hand[8];
+const index=hand[8];
 
-const thumb = hand[4];
+const thumb=hand[4];
 
 
 /* ROTATION */
 
-if(lastHandX !== null){
+if(lastX!==null){
 
-const dx =
+brain.rotation.y+=
 
-index.x -
-
-lastHandX;
+(index.x-lastX)*2;
 
 
-const dy =
+brain.rotation.x+=
 
-index.y -
-
-lastHandY;
-
-
-brain.rotation.y +=
-
-dx * 2;
-
-
-brain.rotation.x +=
-
-dy * 2;
+(index.y-lastY)*2;
 
 }
 
 
-lastHandX =
+lastX=index.x;
 
-index.x;
-
-
-lastHandY =
-
-index.y;
+lastY=index.y;
 
 
-/* PINCH */
+/* PINCH ZOOM */
 
-const dx =
+const dx=
 
-thumb.x -
-
-index.x;
+thumb.x-index.x;
 
 
-const dy =
+const dy=
 
-thumb.y -
-
-index.y;
+thumb.y-index.y;
 
 
-const distance =
+const distance=
 
 Math.sqrt(
 
-dx * dx +
-
-dy * dy
+dx*dx+dy*dy
 
 );
 
 
-if(
+if(lastPinch!==null){
 
-previousPinch !== null
+zoom+=
 
-){
-
-const difference =
-
-distance -
-
-previousPinch;
+(distance-lastPinch)*3;
 
 
-currentZoom +=
+zoom=Math.max(
 
-difference * 3;
+.5,
 
-
-currentZoom =
-
-Math.max(
-
-0.5,
-
-Math.min(
-
-4,
-
-currentZoom
-
-)
+Math.min(4,zoom)
 
 );
 
 
 brain.scale.set(
 
-currentZoom,
-
-currentZoom,
-
-currentZoom
+zoom,zoom,zoom
 
 );
 
 }
 
 
-previousPinch =
-
-distance;
+lastPinch=distance;
 
 
-setStatus(
+status.innerText=
 
-"✋ HAND TRACKING ACTIVE"
-
-);
+"✋ HAND TRACKING ACTIVE";
 
 }
 
 });
 
 
-/* =====================================================
+/* ==========================================
    CAMERA
-===================================================== */
+========================================== */
 
 async function toggleHand(){
 
-if(handTrackingActive){
+if(handOn){
 
-handTrackingActive =
-
-false;
+handOn=false;
 
 
-if(cameraStream){
+if(stream){
 
-cameraStream
+stream.getTracks()
 
-.getTracks()
-
-.forEach(
-
-track =>
-
-track.stop()
-
-);
+.forEach(t=>t.stop());
 
 }
 
 
-cameraVideo.style.display =
-
-"none";
+video.style.display="none";
 
 
-document
-
-.getElementById(
+document.getElementById(
 
 "handButton"
 
-)
-
-.innerText =
+).innerText=
 
 "✋ HAND OFF";
 
@@ -1791,11 +1152,9 @@ return;
 
 try{
 
-cameraStream =
+stream=
 
-await navigator
-
-.mediaDevices
+await navigator.mediaDevices
 
 .getUserMedia({
 
@@ -1806,30 +1165,24 @@ audio:false
 });
 
 
-cameraVideo.srcObject =
+video.srcObject=
 
-cameraStream;
+stream;
 
 
-cameraVideo.style.display =
+video.style.display=
 
 "block";
 
 
-handTrackingActive =
-
-true;
+handOn=true;
 
 
-document
-
-.getElementById(
+document.getElementById(
 
 "handButton"
 
-)
-
-.innerText =
+).innerText=
 
 "✋ HAND ON";
 
@@ -1838,9 +1191,9 @@ processHands();
 
 }
 
-catch(error){
+catch(e){
 
-triggerError();
+error();
 
 }
 
@@ -1849,24 +1202,22 @@ triggerError();
 
 async function processHands(){
 
-if(!handTrackingActive)
-
-return;
+if(!handOn)return;
 
 
 try{
 
 await hands.send({
 
-image:cameraVideo
+image:video
 
 });
 
 }
 
-catch(error){
+catch(e){
 
-triggerError();
+error();
 
 }
 
@@ -1880,294 +1231,201 @@ processHands
 }
 
 
-/* =====================================================
-   TOUCH
-===================================================== */
+/* ==========================================
+   TOUCH MODE
+========================================== */
 
-function toggleTouch(){
+document.getElementById(
 
-touchMode =
+"touchButton"
 
-!touchMode;
+).onclick=()=>{
 
-
-touchButton.innerText =
-
-touchMode
-
-?
-
-"👆 TOUCH ON"
-
-:
-
-"👆 TOUCH OFF";
-
-}
+touchOn=!touchOn;
 
 
-/* TOUCH ROTATION */
+document.getElementById(
 
-renderer.domElement
+"touchButton"
 
-.addEventListener(
+).innerText=
+
+touchOn
+
+?"👆 TOUCH ON"
+
+:"👆 TOUCH OFF";
+
+};
+
+
+/* ==========================================
+   TOUCH ROTATION
+========================================== */
+
+renderer.domElement.addEventListener(
 
 "touchstart",
 
-function(event){
+e=>{
 
-const now =
+const now=Date.now();
 
-Date.now();
-
-
-/* DOUBLE TAP */
 
 if(
 
-now -
-
-lastTap <
-
-300
+now-lastTap<300
 
 ){
 
-startProcessing(2);
+answer(
 
+"Core selected, Boss.",
 
-respond(
-
-"Core selected, Boss."
-
-);
-
-}
-
-
-lastTap = now;
-
-
-if(touchMode){
-
-touchX =
-
-event.touches[0]
-
-.clientX;
-
-
-touchY =
-
-event.touches[0]
-
-.clientY;
-
-}
-
-}
+2
 
 );
 
+}
 
-/* TOUCH MOVE */
 
-renderer.domElement
+lastTap=now;
 
-.addEventListener(
+
+if(touchOn){
+
+touchX=
+
+e.touches[0].clientX;
+
+touchY=
+
+e.touches[0].clientY;
+
+}
+
+});
+
+
+renderer.domElement.addEventListener(
 
 "touchmove",
 
-function(event){
+e=>{
 
-if(!touchMode)
-
-return;
+if(!touchOn)return;
 
 
-event.preventDefault();
+e.preventDefault();
 
 
-const x =
+const x=
 
-event.touches[0]
-
-.clientX;
+e.touches[0].clientX;
 
 
-const y =
+const y=
 
-event.touches[0]
-
-.clientY;
+e.touches[0].clientY;
 
 
-const dx =
+brain.rotation.y+=
 
-x -
-
-touchX;
+(x-touchX)*.01;
 
 
-const dy =
+brain.rotation.x+=
 
-y -
-
-touchY;
+(y-touchY)*.01;
 
 
-brain.rotation.y +=
+touchX=x;
 
-dx * 0.01;
-
-
-brain.rotation.x +=
-
-dy * 0.01;
-
-
-touchX = x;
-
-touchY = y;
+touchY=y;
 
 },
 
-{
-
-passive:false
-
-}
+{passive:false}
 
 );
 
 
-/* =====================================================
+/* ==========================================
    RESET
-===================================================== */
+========================================== */
 
-function reset(){
+document.getElementById(
+
+"resetButton"
+
+).onclick=()=>{
 
 brain.rotation.set(
 
-0,
-
-0,
-
-0
+0,0,0
 
 );
 
 
-coreMaterial.color.set(
+brain.scale.set(
+
+1,1,1
+
+);
+
+
+zoom=1;
+
+
+core.material.color.set(
 
 0xffd000
 
 );
 
 
-coreGlow.material.opacity =
-
-0.12;
+glow.material.opacity=.12;
 
 
-currentZoom = 1;
+status.innerText=
+
+"MARK 10 READY";
 
 
-brain.scale.set(
+show(
 
-1,
-
-1,
-
-1
+"NEURAL CORE ONLINE"
 
 );
 
-
-stopProcessing();
-
-
-showResponse(
-
-"ULTRON MARK 9 ONLINE"
-
-);
-
-}
+};
 
 
-/* =====================================================
+/* ==========================================
    BUTTONS
-===================================================== */
+========================================== */
 
-document
-
-.getElementById(
+document.getElementById(
 
 "handButton"
 
-)
-
-.onclick =
+).onclick=
 
 toggleHand;
 
 
-document
-
-.getElementById(
-
-"touchButton"
-
-)
-
-.onclick =
-
-toggleTouch;
-
-
-document
-
-.getElementById(
+document.getElementById(
 
 "voiceButton"
 
-)
+).onclick=
 
-.onclick =
-
-startVoice;
+listen;
 
 
-document
-
-.getElementById(
-
-"typeButton"
-
-)
-
-.onclick =
-
-toggleTyping;
-
-
-document
-
-.getElementById(
-
-"resetButton"
-
-)
-
-.onclick =
-
-reset;
-
-
-/* =====================================================
+/* ==========================================
    ANIMATION
-===================================================== */
+========================================== */
 
 function animate(){
 
@@ -2178,35 +1436,38 @@ animate
 );
 
 
-core.rotation.x +=
+core.rotation.x+=.008;
 
-0.008;
-
-
-core.rotation.y +=
-
-0.012;
+core.rotation.y+=.012;
 
 
-rings.forEach(
+neurons.forEach(n=>{
 
-(ring,index) => {
+if(
 
-ring.rotation.x +=
+Math.random()<.01
 
-0.001;
+){
 
+n.material.color.set(
 
-ring.rotation.y +=
-
-0.002;
-
-}
+0xffffff
 
 );
 
+setTimeout(()=>{
 
-animateSignals();
+n.material.color.set(
+
+0xffd84a
+
+);
+
+},150);
+
+}
+
+});
 
 
 renderer.render(
@@ -2223,23 +1484,15 @@ camera
 animate();
 
 
-/* =====================================================
+/* ==========================================
    RESIZE
-===================================================== */
+========================================== */
 
-window
+window.onresize=()=>{
 
-.addEventListener(
+camera.aspect=
 
-"resize",
-
-function(){
-
-camera.aspect =
-
-window.innerWidth /
-
-window.innerHeight;
+innerWidth/innerHeight;
 
 
 camera.updateProjectionMatrix();
@@ -2247,10 +1500,10 @@ camera.updateProjectionMatrix();
 
 renderer.setSize(
 
-window.innerWidth,
+innerWidth,
 
-window.innerHeight
+innerHeight
 
 );
 
-});
+};
