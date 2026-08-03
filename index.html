@@ -11,7 +11,7 @@ initial-scale=1.0,
 maximum-scale=1.0,
 user-scalable=no">
 
-<title>ULTRON AI V3</title>
+<title>ULTRON AI V4</title>
 
 <link rel="stylesheet"
 href="style.css">
@@ -24,6 +24,7 @@ href="style.css">
 
 
 <body>
+
 
 <div id="title">
 ULTRON
@@ -40,7 +41,8 @@ SYSTEM READY
 </div>
 
 
-<video id="camera"
+<video
+id="camera"
 autoplay
 playsinline
 muted>
@@ -52,7 +54,7 @@ muted>
 <input
 id="questionInput"
 type="text"
-placeholder="Ask ULTRON anything..."
+placeholder="Ask ULTRON..."
 autocomplete="off">
 
 <button onclick="sendTypedQuestion()">
@@ -63,6 +65,7 @@ SEND
 
 
 <div class="buttons">
+
 
 <button
 onclick="toggleHandTracking()"
@@ -82,25 +85,29 @@ id="touchButton">
 </button>
 
 
-<button onclick="startVoice()">
+<button
+onclick="startVoice()">
 
 🎤 VOICE
 
 </button>
 
 
-<button onclick="toggleTyping()">
+<button
+onclick="toggleTyping()">
 
 ⌨️ TYPE
 
 </button>
 
 
-<button onclick="resetBrain()">
+<button
+onclick="resetBrain()">
 
 🔄 RESET
 
 </button>
+
 
 </div>
 
