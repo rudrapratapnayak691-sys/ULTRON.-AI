@@ -1,84 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport"
-content="width=device-width,
-initial-scale=1.0,
-maximum-scale=1.0,
-user-scalable=no">
+      content="width=device-width, initial-scale=1.0">
 
-<title>ULTRON MARK 11</title>
+<title>ULTRON MARK 12</title>
 
 <link rel="stylesheet" href="style.css">
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-
 </head>
 
 <body>
 
-<div id="title">
-ULTRON MARK 11
-</div>
+<div class="app">
 
-<div id="response">
-NEURAL CORE ONLINE
-</div>
+    <header>
+        <h1>ULTRON MARK 12</h1>
+        <p>ULTRON MARK 12: NEURAL CORE ONLINE</p>
+    </header>
 
-<div id="status">
-MARK 11 READY
-</div>
+    <main>
 
-<video id="camera"
-autoplay
-playsinline
-muted>
-</video>
+        <div id="neuralCore">
 
-<div id="typingPanel">
+            <div class="energyRing ring1"></div>
+            <div class="energyRing ring2"></div>
+            <div class="energyRing ring3"></div>
 
-<input
-id="questionInput"
-placeholder="Ask ULTRON MARK 11...">
+            <div class="coreGlow"></div>
 
-<button id="sendButton">
-SEND
-</button>
+            <div id="neurons"></div>
 
-</div>
+            <div class="core">
+                <div class="corePulse"></div>
+                <span>U</span>
+            </div>
 
-<div class="buttons">
+        </div>
 
-<button id="handButton">
-✋ HAND OFF
-</button>
+        <div id="status">
+            MARK 12 READY
+        </div>
 
-<button id="touchButton">
-👆 TOUCH OFF
-</button>
+        <div id="response">
+            Awaiting command...
+        </div>
 
-<button id="voiceButton">
-🎤 VOICE
-</button>
+    </main>
 
-<button id="typeButton">
-⌨️ TYPE
-</button>
+    <div class="controls">
 
-<button id="resetButton">
-🔄 RESET
-</button>
+        <button onclick="toggleHand()">
+            👋 HAND OFF
+        </button>
+
+        <button onclick="toggleTouch()">
+            ☝️ TOUCH OFF
+        </button>
+
+        <button onclick="startVoice()">
+            🎙️ VOICE
+        </button>
+
+        <button onclick="typeCommand()">
+            ⌨️ TYPE
+        </button>
+
+        <button onclick="resetUltron()">
+            🔄 RESET
+        </button>
+
+    </div>
 
 </div>
 
 <script src="script.js"></script>
 
 </body>
-
 </html>
